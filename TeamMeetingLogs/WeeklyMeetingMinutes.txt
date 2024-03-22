@@ -2,3 +2,7 @@ The minutes of the meeting with your TA every week will be recorded in a file he
 1. Decisions made
 2. Alternative actions/options discussed
 3. Follow-up items, including agreed-on roles and responsibilities
+
+3/22/23 4-4:15 Meeting Minutes - Nikhil did not show up for meeting, so we sent an email.
+All work is assigned as an issue in GitHub.
+Once the assigned basic skeleton is built, if this is not sufficient work for the week, we can additionally start implementing more of the backend elements such as the user database. 
