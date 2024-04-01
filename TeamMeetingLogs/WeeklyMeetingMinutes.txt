@@ -3,6 +3,22 @@ The minutes of the meeting with your TA every week will be recorded in a file he
 2. Alternative actions/options discussed
 3. Follow-up items, including agreed-on roles and responsibilities
 
-3/22/23 4-4:15 Meeting Minutes - Nikhil did not show up for meeting, so we sent an email.
+3/22/24 4-4:15 Meeting Minutes - Nikhil did not show up for meeting, so we sent an email.
 All work is assigned as an issue in GitHub.
-Once the assigned basic skeleton is built, if this is not sufficient work for the week, we can additionally start implementing more of the backend elements such as the user database. 
+Once the assigned basic skeleton is built, if this is not sufficient work for the week, we can additionally start implementing more of the backend elements such as the user database.
+
+4/1/24 12-12:15 Meeting Minutes
+BEFORE TODAY:
+    Met to discuss and set up Lab 9 Sheet since we had the Snow Day
+    Made Kanban board and set up tickets for the upcoming weeks on first in person lab meeting
+Working on individual tickets to set up basic UI and session management before moving on to API
+Using Handlebars for templating
+User stories look good for now - come up with difficulties
+Choose an appropriate API, don't want to run into problems like limited API requests.
+Other useful APIs: 
+Since there's no money, we can use a manual settlement feature
+  Mock payment API? needs to just show that it's settled.
+  Stripe API - might be free
+  Paysimple
+  https://www.g2.com/categories/payment-gateways/free
+
