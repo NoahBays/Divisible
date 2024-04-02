@@ -1,0 +1,27 @@
+{{> header}}
+
+<div class="container">
+    <button class="btn btn-primary">Add Friend</button>
+    <div class="row">
+        {{#each friends}}
+        <div class="col-sm-4">
+            <img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">
+            <h3>{{this.name}}</h3>
+        </div>
+        {{/each}}
+    </div>
+
+    <button class="btn btn-primary mt-4">Add Group</button>
+    <div class="row">
+        {{#each groups}}
+        <div class="col-sm-4">
+            <img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">
+            <h3>{{this.name}}</h3>
+        </div>
+        {{/each}}
+    </div>
+</div>
+
+{{> footer}}
+
+
