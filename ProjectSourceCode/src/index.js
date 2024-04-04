@@ -76,6 +76,11 @@ app.use(
 
 // TODO - Include your API routes here
 
+// dummy route from lab 11
+app.get("/welcome", (req, res) => {
+  res.json({ status: "success", message: "Welcome!" });
+});
+
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
@@ -160,13 +165,13 @@ app.get("/logout", (req, res) => {
 
 // Home
 // GET
-app.get('/home', (req, res) => {
-  res.render('pages/home');
+app.get("/home", (req, res) => {
+  res.render("pages/home");
 });
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
 // starting the server and keeping the connection open to listen for more requests
-app.listen(3000);
+module.exports = app.listen(3000);
 console.log("Server is listening on port 3000");
