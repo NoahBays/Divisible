@@ -158,6 +158,12 @@ app.get("/logout", (req, res) => {
   res.render("pages/logout", { message: "Successfully Logged Out." });
 });
 
+// Home
+// GET
+app.get('/home', (req, res) => {
+  res.render('pages/home');
+});
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
