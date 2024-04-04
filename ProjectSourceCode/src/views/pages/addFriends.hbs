@@ -5,8 +5,10 @@
     <div class="row">
         {{#each friends}}
         <div class="col-sm-4">
-            <img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">
-            <h3>{{this.name}}</h3>
+            <a href="/friends/{{this.id}}">
+                <img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">
+                <h3>{{this.name}}</h3>
+            </a>
         </div>
         {{/each}}
     </div>
@@ -15,8 +17,10 @@
     <div class="row">
         {{#each groups}}
         <div class="col-sm-4">
-            <img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">
-            <h3>{{this.name}}</h3>
+            <a href="/groups/{{this.id}}">
+                <img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">
+                <h3>{{this.name}}</h3>
+            </a>
         </div>
         {{/each}}
     </div>
@@ -24,4 +28,12 @@
 
 {{> footer}}
 
+{{!--
+app.get('/friends/:id', (req, res) => {
+    // Fetch friend data using req.params.id and render the friend detail page
+});
 
+app.get('/groups/:id', (req, res) => {
+    // Fetch group data using req.params.id and render the group detail page
+});
+--}}
