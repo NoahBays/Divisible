@@ -1,0 +1,45 @@
+<div class="container">
+    <div class="col-4">
+        <h1>Home</h1>
+    </div>
+    <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Notifications</button>
+    <ul class="dropdown-menu">
+        {{#each notifications}}
+    <li><a class="dropdown-item">{{this.message}}</a></li>
+        {{/each}}
+  </ul>
+    <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Settings</button>
+    <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="../ManageAccount">Manage Account</a></li>
+    <li><a class="dropdown-item" href="../logout">Logout</a></li>
+  </ul>
+</div>
+
+<div class="container">
+    <button type="submit" class="btn btn-primary" style="margin: 1em" onclick="location.href='../addFriends'">Add Friend</button>
+    <button type="submit" class="btn btn-primary" style="margin: 1em" onclick="location.href='../addGroups'">Add Group</button>
+</div>
+
+<div class="container">
+    <div class="row">
+        <h2 style="text-decoration:underline">Groups list</h2>
+        {{#each groups}}
+        <div class="col-sm-4">
+            <img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">
+            <a class="btn" onclick="location.href='../ExampleGroup'">{{this.name}}</a>
+        </div>
+        {{/each}}
+    </div>   
+</div>
+
+<div class="container">
+    <div class="row">
+        <h2 style="text-decoration:underline">Friends list</h2>        
+        {{#each friends}}
+        <div class="col-sm-4">
+            <img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">
+            <a class="btn" onclick="location.href='../ExampleFriend'">{{this.name}}</a>
+        </div>
+        {{/each}}
+    </div>
+</div>
