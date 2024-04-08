@@ -11,25 +11,3 @@
 
 
 {{> footer}}
-
-{{!-- Example API 
-// Example API for group creation
-app.post('/api/groups', (req, res) => {
-    // Retrieve the necessary data from the request body
-    const { name, image, users, paymentHistory } = req.body;
-
-    // Perform any necessary validation on the data
-
-    // Create a new group object
-    const group = {
-        name,
-        image,
-        users,
-        paymentHistory
-    };
-
-    // Save the group to the database or perform any other necessary operations
-
-    // Return a success response with the created group
-    res.status(201).json({ message: 'Group created successfully!', group });
-});

@@ -91,6 +91,20 @@ app.get("/registerpage", (req, res) => {
   res.render("pages/register", {});
 });
 
+// createGroup
+// GET
+app.get("/createGroup", (req, res) => {
+  res.render("pages/createGroup", {});
+});
+
+// createGroup
+// GET
+app.get("/addFriends", (req, res) => {
+  res.render("pages/addFriends", {});
+});
+
+
+
 // POST
 // app.post("/register", async (req, res) => {
 //   console.log(req.body.username, req.body.password);
