@@ -1,3 +1,4 @@
+
 -- Create the users table
 CREATE TABLE users (
     id INT PRIMARY KEY,

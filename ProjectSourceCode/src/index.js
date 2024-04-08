@@ -87,7 +87,7 @@ app.get("/", (req, res) => {
 
 // Register
 // GET
-app.get("/register", (req, res) => {
+app.get("/registerpage", (req, res) => {
   res.render("pages/register", {});
 });
 
@@ -106,23 +106,60 @@ app.get("/addFriends", (req, res) => {
 
 
 // POST
+// app.post("/register", async (req, res) => {
+//   console.log(req.body.username, req.body.password);
+//   console.log("req.body", req.body);
+
+//   const { username, password } = req.body;
+//   // Check if username and password are provided
+//   if (!username || !password) {
+//     res.json({ status: 400, message: "Invalid input" });
+//   }
+//   try {
+//     // TODO: reimplement the hashing
+//     // Hash the password using bcrypt library
+//     // const hash = await bcrypt.hash(req.body.password, 10);
+
+//     // Insert username and hashed password into the 'users' table
+//     await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
+//       req.body.username,
+//       req.body.password,
+//     ]);
+
+//     // Redirect to GET /login route page after data has been inserted successfully
+//     res.json({ status: 200, message: "success" });
+
+//     // res.redirect("/login");
+//   } catch (error) {
+//     console.error(error);
+//     res.json({ status: 400, message: "Invalid input" });
+//     // If the insert fails, redirect to GET /register route
+//     // res.redirect("/register");
+//   }
+// });
+
 app.post("/register", async (req, res) => {
-  try {
-    // Hash the password using bcrypt library
+  if (req.body.password && req.body.username) {
     const hash = await bcrypt.hash(req.body.password, 10);
-
-    // Insert username and hashed password into the 'users' table
-    await db.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
-      req.body.username,
-      hash,
-    ]);
-
-    // Redirect to GET /login route page after data has been inserted successfully
-    res.redirect("/login");
-  } catch (error) {
-    console.error(error);
-    // If the insert fails, redirect to GET /register route
-    res.redirect("/register");
+    const query = "INSERT INTO users (username, password) VALUES ($1, $2);";
+    db.any(query, [req.body.username, hash])
+      .then((data) => {
+        //res.redirect('/login');
+        console.log(
+          "Register successful.",
+          req.body.username,
+          req.body.password
+        );
+        res.json({ status: 200, message: "success" });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.json({ status: 400, message: "Invalid input" });
+        //res.redirect('/register');
+      });
+  } else {
+    //res.redirect('/register');
+    res.json({ status: 400, message: "Invalid input" });
   }
 });
 
