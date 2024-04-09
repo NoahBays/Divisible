@@ -1,12 +1,11 @@
 INSERT INTO users
-(id, username, password)
+(username, password)
 VALUES
-(1, Noah, lmnop),
-(2, Ben, wxyz),
-(3, Jace, abcde);
+('Noah','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82'),
+('Ben','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82');
 
 INSERT INTO friendships
-(user_id, friend_id)
+(username, friend_username)
 VALUES
-(1,2),
-(2,3);
+('Noah', 'Ben'),
+('Ben', 'Noah');

@@ -138,16 +138,19 @@ app.post("/register", async (req, res) => {
     const query = "INSERT INTO users (username, password) VALUES ($1, $2);";
     db.any(query, [req.body.username, hash])
       .then((data) => {
-        res.json({ status: 200, message: "Success" });
-        //res.redirect("/login");
+        //res.json({ status: 200, message: "Success" });
+        res.redirect("/login");
+        console.log("Registered successfully");
       })
       .catch((err) => {
-        res.json({ status: 400, message: "Invalid input" });
-        //res.redirect("/registerpage");
+        //res.json({ status: 400, message: "Invalid input" });
+        res.redirect("/registerpage");
+        console.log("Invalid input");
       });
   } else {
-    res.json({ status: 400, message: "No input provided" });
-    //res.redirect("/registerpage");
+    //res.json({ status: 400, message: "No input provided" });
+    res.redirect("/registerpage");
+    console.log("No input provided");
   }
 });
 
@@ -168,28 +171,34 @@ app.post("/login", async (req, res) => {
     if (user) {
       // Use bcrypt.compare to encrypt the password entered from the user and compare if the entered password is the same as the registered one
       const match = await bcrypt.compare(req.body.password, user.password);
+      console.log("User found");
 
       if (match) {
         // Save the user in the session variable
         req.session.user = user;
         req.session.save();
+        console.log("Password matched successfully");
 
         // Redirect to /discover route after setting the session
         res.redirect("/home");
+        console.log("Logged in successfully");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {
           message: "Incorrect username or password",
         });
+        console.log("Password match unsuccessful");
       }
     } else {
       // If the user is not found in the table, redirect to GET /register route
       res.redirect("/registerpage");
+      console.log("User not found");
     }
   } catch (error) {
     console.error(error);
     // If an error occurs, render the login page and send a generic error message
     res.render("pages/login", { message: "An error occurred" });
+    console.log("An error has occurred");
   }
 });
 
@@ -199,13 +208,22 @@ app.get("/logout", (req, res) => {
   // Destroy the session
   req.session.destroy();
   // render lgoout page
-  res.render("pages/logout", { message: "Successfully Logged Out." });
+  res.render("pages/login", { message: "Successfully Logged Out." });
 });
 
 // Home
 // GET
-app.get("/home", (req, res) => {
-  res.render("pages/home");
+app.get('/home', (req, res) => {
+  db.one("SELECT * FROM users WHERE username = $1", [req.session.user.username])
+    .then(data => {
+      res.render('pages/home', {
+//Where user data for the page will go
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.render('pages/login');
+    });
 });
 
 // *****************************************************
