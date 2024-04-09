@@ -29,3 +29,16 @@ CREATE TABLE group_members (
     FOREIGN KEY (group_id) REFERENCES groups(id),
     FOREIGN KEY (username) REFERENCES users(username)
 );
+
+--Create transaction table
+CREATE TABLE transactions(
+  charge_amount FLOAT,
+  charge_desc CHAR(50),
+  date VARCHAR(20),
+  sender_id INT,
+  recipient_id INT,
+  group_id INT,
+  FOREIGN KEY (group_id) REFERENCES groups(id),
+  FOREIGN KEY (sender_id) REFERENCES users(id),
+  FOREIGN KEY (recipient_id) REFERENCES users(id)
+)

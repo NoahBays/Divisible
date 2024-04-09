@@ -139,46 +139,15 @@ app.post("/register", async (req, res) => {
     db.any(query, [req.body.username, hash])
       .then((data) => {
         res.json({ status: 200, message: "Success" });
-        res.redirect("/login");
-        console.log(
-          "Register successful.",
-          req.body.username,
-          req.body.password
-        );
+        //res.redirect("/login");
       })
       .catch((err) => {
-        console.log(err);
         res.json({ status: 400, message: "Invalid input" });
-        res.redirect("/registerpage");
+        //res.redirect("/registerpage");
       });
   } else {
     res.json({ status: 400, message: "No input provided" });
-    res.redirect("/registerpage");
-  }
-});
-
-app.post("/register", async (req, res) => {
-  if (req.body.password && req.body.username) {
-    const hash = await bcrypt.hash(req.body.password, 10);
-    const query = "INSERT INTO users (username, password) VALUES ($1, $2);";
-    db.any(query, [req.body.username, hash])
-      .then((data) => {
-        res.redirect('/login');
-        console.log(
-          "Register successful.",
-          req.body.username,
-          req.body.password
-        );
-        res.json({ status: 200, message: "success" });
-      })
-      .catch((err) => {
-        console.log(err);
-        res.json({ status: 400, message: "Invalid input" });
-        res.redirect('/registerpage');
-      });
-  } else {
-    res.redirect('/registerpage');
-    res.json({ status: 400, message: "Invalid input" });
+    //res.redirect("/registerpage");
   }
 });
 
