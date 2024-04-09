@@ -88,7 +88,7 @@ app.get("/", (req, res) => {
 // Register
 // GET
 app.get("/registerpage", (req, res) => {
-  res.render("pages/register", {});
+  res.render("pages/registerpage", {});
 });
 
 // createGroup
@@ -136,7 +136,7 @@ app.get("/addFriends", (req, res) => {
 //   }
 // });
 
-app.post("/register", async (req, res) => {
+app.post("/registerpage", async (req, res) => {
   if (req.body.password && req.body.username) {
     const hash = await bcrypt.hash(req.body.password, 10);
     const query = "INSERT INTO users (username, password) VALUES ($1, $2);";
@@ -148,23 +148,22 @@ app.post("/register", async (req, res) => {
           req.body.username,
           req.body.password
         );
-        res.json({ status: 200, message: "success" });
       })
       .catch((err) => {
         console.log(err);
-        res.json({ status: 400, message: "Invalid input" });
+        //res.json({ status: 400, message: "Invalid input" });
         res.redirect('/registerpage');
       });
   } else {
     res.redirect('/registerpage');
-    res.json({ status: 400, message: "Invalid input" });
+    //res.json({ status: 400, message: "No input provided" });
   }
 });
 
 // Login
 // GET
 app.get("/login", (req, res) => {
-  res.render("pages/login", {});
+  res.render("pages/login");
 });
 
 // POST
@@ -186,6 +185,11 @@ app.post("/login", async (req, res) => {
 
         // Redirect to /discover route after setting the session
         res.redirect("/home");
+        console.log(
+          "Register successful.",
+          req.body.username,
+          req.body.password
+        );
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {

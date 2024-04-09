@@ -1,9 +1,9 @@
 INSERT INTO users
-(id, username, password)
+(username, password)
 VALUES
-(1, Noah, lmnop),
-(2, Ben, wxyz),
-(3, Jace, abcde);
+(Noah, lmnop),
+(Ben, wxyz),
+(Jace, abcde);
 
 INSERT INTO friendships
 (user_id, friend_id)
