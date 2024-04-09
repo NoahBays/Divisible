@@ -103,7 +103,25 @@ app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
 });
 
+// POST Register
+app.post("/register", async (req, res) => {
+  console.log(req.body);
+  //hash the password using bcrypt library
+  // const hash = await bcrypt.hash(req.body.password, 10);
 
+  try {
+    // Insert username and hashed password into the 'users' table
+    await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
+      req.body.username,
+      req.body.password,
+    ]);
+
+    res.json({ status: 200, message: "success" });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: 400, message: "Invalid input" });
+  }
+});
 
 // POST
 // app.post("/register", async (req, res) => {
