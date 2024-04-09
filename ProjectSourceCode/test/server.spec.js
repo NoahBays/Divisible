@@ -39,7 +39,7 @@ describe("Testing /register API endpoint", () => {
       .send({ username: "John Doe", password: "password" })
       .end((err, res) => {
         expect(res).to.have.status(200);
-        expect(res.body.message).to.equals("Success");
+        expect(res.body.message).to.equals("Register Successful");
         done();
       });
   });
