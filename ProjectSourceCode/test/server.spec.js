@@ -49,7 +49,7 @@ describe("Testing Add User API", () => {
       .send({ username: "John Doe", password: "123" })
       .end((err, res) => {
         expect(res).to.have.status(200);
-        expect(res.body.message).to.equals("success");
+        expect(res.body.message).to.equals("Register Successful");
         done();
       });
   });
