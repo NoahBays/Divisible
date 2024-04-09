@@ -22,3 +22,17 @@ Since there's no money, we can use a manual settlement feature
   Paysimple
   https://www.g2.com/categories/payment-gateways/free
 
+4/8/24 12:30-12:45 Meeting Minutes
+DUring thursday Lab we went over the week's work, divied up this work which is mostly API stuff:
+Also discussed UI and application problems
+Session management and database is the primary goal for this week
+Testing is in progress, we are meeting tomorrow to get the lab finished.
+Expecting no major changes in design
+Nikhil would like to review features what can be expected:
+Friends database, user database
+Groups - of friends where you can split the bill
+Making group payment tracking history - as well as payment tracking
+By thursday: major improvement in terms of code in the repository, we only have 1 MORE WEEK TO GO; next week is last meeting before presentation
+We want 80-85% of code done by next week!
+
+
