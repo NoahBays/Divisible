@@ -1,32 +1,31 @@
 
 -- Create the users table
 CREATE TABLE users (
-    id INT PRIMARY KEY,
-    username VARCHAR(255),
+    username VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255)
 );
 
 -- Create the friends table
 CREATE TABLE friendships (
-    user_id INT,
-    friend_id INT,
-    PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (friend_id) REFERENCES users(id)
+    username VARCHAR(255),
+    friend_username VARCHAR(255),
+    PRIMARY KEY (username, friend_username),
+    FOREIGN KEY (username) REFERENCES users(username),
+    FOREIGN KEY (friend_username) REFERENCES users(username)
 );
 
 -- Create the groups table
 CREATE TABLE groups (
     id INT PRIMARY KEY,
-    group_admin INT,
-    FOREIGN KEY (group_admin) REFERENCES users(id)
+    group_admin_username VARCHAR(255),
+    FOREIGN KEY (group_admin_username) REFERENCES users(username)
 );
 
 -- Create the group_members table
 CREATE TABLE group_members (
     group_id INT,
-    user_id INT,
-    PRIMARY KEY (group_id, user_id),
+    username VARCHAR(255),
+    PRIMARY KEY (group_id, username),
     FOREIGN KEY (group_id) REFERENCES groups(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (username) REFERENCES users(username)
 );

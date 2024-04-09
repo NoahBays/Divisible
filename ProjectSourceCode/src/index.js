@@ -103,40 +103,59 @@ app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
 });
 
-
-
-// POST
+// POST Register
 // app.post("/register", async (req, res) => {
-//   console.log(req.body.username, req.body.password);
-//   console.log("req.body", req.body);
+//   console.log(req.body);
+//   //hash the password using bcrypt library
+//   // const hash = await bcrypt.hash(req.body.password, 10);
 
-//   const { username, password } = req.body;
-//   // Check if username and password are provided
-//   if (!username || !password) {
-//     res.json({ status: 400, message: "Invalid input" });
-//   }
 //   try {
-//     // TODO: reimplement the hashing
-//     // Hash the password using bcrypt library
-//     // const hash = await bcrypt.hash(req.body.password, 10);
-
 //     // Insert username and hashed password into the 'users' table
+//     if (
+//       typeof req.body.username === undefined ||
+//       typeof req.body.password === undefined
+//     ) {
+//       console.log("reached");
+//       throw new Error("Invalid input");
+//     }
+
 //     await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
 //       req.body.username,
 //       req.body.password,
 //     ]);
 
-//     // Redirect to GET /login route page after data has been inserted successfully
-//     res.json({ status: 200, message: "success" });
-
-//     // res.redirect("/login");
+//     res.json({ status: 200, message: "Success" });
 //   } catch (error) {
 //     console.error(error);
 //     res.json({ status: 400, message: "Invalid input" });
-//     // If the insert fails, redirect to GET /register route
-//     // res.redirect("/register");
 //   }
 // });
+
+app.post("/register", async (req, res) => {
+  if (req.body.password && req.body.username) {
+    const hash = await bcrypt.hash(req.body.password, 10);
+
+    const query = "INSERT INTO users (username, password) VALUES ($1, $2);";
+    db.any(query, [req.body.username, hash])
+      .then((data) => {
+        res.json({ status: 200, message: "Success" });
+        res.redirect("/login");
+        console.log(
+          "Register successful.",
+          req.body.username,
+          req.body.password
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+        res.json({ status: 400, message: "Invalid input" });
+        res.redirect("/registerpage");
+      });
+  } else {
+    res.json({ status: 400, message: "No input provided" });
+    res.redirect("/registerpage");
+  }
+});
 
 app.post("/register", async (req, res) => {
   if (req.body.password && req.body.username) {
