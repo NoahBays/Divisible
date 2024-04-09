@@ -82,7 +82,7 @@ app.get("/welcome", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.redirect("/register");
+  res.redirect("/registerpage");
 });
 
 // Register
@@ -102,8 +102,6 @@ app.get("/createGroup", (req, res) => {
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
 });
-
-
 
 // POST
 // app.post("/register", async (req, res) => {
@@ -144,7 +142,7 @@ app.post("/register", async (req, res) => {
     const query = "INSERT INTO users (username, password) VALUES ($1, $2);";
     db.any(query, [req.body.username, hash])
       .then((data) => {
-        //res.redirect('/login');
+        res.redirect('/login');
         console.log(
           "Register successful.",
           req.body.username,
@@ -155,10 +153,10 @@ app.post("/register", async (req, res) => {
       .catch((err) => {
         console.log(err);
         res.json({ status: 400, message: "Invalid input" });
-        //res.redirect('/register');
+        res.redirect('/registerpage');
       });
   } else {
-    //res.redirect('/register');
+    res.redirect('/registerpage');
     res.json({ status: 400, message: "Invalid input" });
   }
 });
@@ -187,7 +185,7 @@ app.post("/login", async (req, res) => {
         req.session.save();
 
         // Redirect to /discover route after setting the session
-        res.redirect("/discover");
+        res.redirect("/home");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {
@@ -196,7 +194,7 @@ app.post("/login", async (req, res) => {
       }
     } else {
       // If the user is not found in the table, redirect to GET /register route
-      res.redirect("/register");
+      res.redirect("/registerpage");
     }
   } catch (error) {
     console.error(error);
