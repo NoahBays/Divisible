@@ -14,7 +14,7 @@ CREATE TABLE friendships (
     FOREIGN KEY (username) REFERENCES users(username),
     FOREIGN KEY (friend_username) REFERENCES users(username)
 );
-/*
+
 -- Create the groups table
 DROP TABLE IF EXISTS groups;
 CREATE TABLE groups (
@@ -28,11 +28,11 @@ DROP TABLE IF EXISTS group_members;
 CREATE TABLE group_members (
     group_id INT,
     username VARCHAR(255),
-    PRIMARY KEY (group_id, username),
+    --PRIMARY KEY (group_id, username),
     FOREIGN KEY (group_id) REFERENCES groups(id),
     FOREIGN KEY (username) REFERENCES users(username)
 );
-
+/*
 --Create transaction table
 CREATE TABLE transactions(
   charge_amount FLOAT,
