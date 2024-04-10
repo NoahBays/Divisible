@@ -34,7 +34,7 @@ CREATE TABLE group_members (
 CREATE TABLE transactions(
   charge_amount FLOAT,
   charge_desc CHAR(50),
-  date VARCHAR(20),
+  date VARCHAR(20), --have to look into how js displays dates
   sender_id INT,
   recipient_id INT,
   group_id INT,

@@ -151,6 +151,44 @@ app.post("/register", async (req, res) => {
   }
 });
 
+app.post("/createGroup", async (req, res) => { 
+  if (req.body.id) {
+
+    const query = "INSERT INTO groups (id, group_admin_username) VALUES ($1, $2);";
+    db.any(query, [req.body.id, req.body.group_admin_username])
+      .then((data) => {
+        res.json({ status: 200, message: "Success" });
+        //res.redirect("/home");
+      })
+      .catch((err) => {
+        res.json({ status: 400, message: "Invalid input" });
+        //res.redirect("/registerpage");
+      });
+  } else {
+    res.json({ status: 400, message: "No input provided" });
+    //res.redirect("/registerpage");
+  }
+});
+
+app.post("/addFriends", async (req, res) => { 
+  if (req.body.friend_username) {
+
+    const query = "INSERT INTO friendships (username, friend_username) VALUES ($1, $2);";
+    db.any(query, [req.body.username, req.body.friend_username])
+      .then((data) => {
+        res.json({ status: 200, message: "Success" });
+        //res.redirect("/home");
+      })
+      .catch((err) => {
+        res.json({ status: 400, message: "Invalid input" });
+        //res.redirect("/registerpage");
+      });
+  } else {
+    res.json({ status: 400, message: "No input provided" });
+    //res.redirect("/registerpage");
+  }
+});
+
 // Login
 // GET
 app.get("/login", (req, res) => {
@@ -192,6 +230,8 @@ app.post("/login", async (req, res) => {
     res.render("pages/login", { message: "An error occurred" });
   }
 });
+
+
 
 // Logout
 // GET
