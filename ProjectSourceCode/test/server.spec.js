@@ -39,7 +39,7 @@ describe("Testing /register API endpoint", () => {
       .send({ username: "John Doe", password: "password" })
       .end((err, res) => {
         expect(res).to.have.status(200);
-        expect(res.body.message).to.equals("Success");
+        expect(res.body.message).to.equals("User created successfully");
         done();
       });
   });
@@ -58,7 +58,7 @@ describe("Testing /register API endpoint", () => {
       .send({ id: "5", name: 10, dob: "2020-02-20" })
       .end((err, res) => {
         expect(res).to.have.status(400);
-        expect(res.body.message).to.equals("Invalid input");
+        expect(res.body.error).to.equals("Missing required fields");
         done();
       });
   });
