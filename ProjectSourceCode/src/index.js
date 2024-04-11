@@ -104,50 +104,31 @@ app.get("/addFriends", (req, res) => {
 });
 
 // POST Register
-// app.post("/register", async (req, res) => {
-//   console.log(req.body);
-//   //hash the password using bcrypt library
-//   // const hash = await bcrypt.hash(req.body.password, 10);
-
-//   try {
-//     // Insert username and hashed password into the 'users' table
-//     if (
-//       typeof req.body.username === undefined ||
-//       typeof req.body.password === undefined
-//     ) {
-//       console.log("reached");
-//       throw new Error("Invalid input");
-//     }
-
-//     await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
-//       req.body.username,
-//       req.body.password,
-//     ]);
-
-//     res.json({ status: 200, message: "Success" });
-//   } catch (error) {
-//     console.error(error);
-//     res.json({ status: 400, message: "Invalid input" });
-//   }
-// });
-
 app.post("/register", async (req, res) => {
-  if (req.body.password && req.body.username) {
-    const hash = await bcrypt.hash(req.body.password, 10);
+  console.log(req.body);
+  //hash the password using bcrypt library
+  // const hash = await bcrypt.hash(req.body.password, 10);
 
-    const query = "INSERT INTO users (username, password) VALUES ($1, $2);";
-    db.any(query, [req.body.username, hash])
-      .then((data) => {
-        res.json({ status: 200, message: "Success" });
-        //res.redirect("/login");
-      })
-      .catch((err) => {
-        res.json({ status: 400, message: "Invalid input" });
-        //res.redirect("/registerpage");
-      });
-  } else {
-    res.json({ status: 400, message: "No input provided" });
-    //res.redirect("/registerpage");
+  try {
+    // Insert username and hashed password into the 'users' table
+    if (
+      typeof req.body.username != "string" ||
+      typeof req.body.password != "string"
+    ) {
+      console.log("reached");
+      // res.json({ status: 400, message: "Invalid input" });
+      throw new Error("Invalid input");
+    }
+
+    await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
+      req.body.username,
+      req.body.password,
+    ]);
+
+    res.json({ status: 200, message: "Success" });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: 400, message: "Invalid input" });
   }
 });
 
