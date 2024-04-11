@@ -10,3 +10,8 @@
 -- VALUES
 -- ('Noah', 'Ben'),
 -- ('Ben', 'Jace');
+
+INSERT INTO groups
+(id, group_admin_username, group_name)
+VALUES
+(1, 'Noah', 'Wallet Wizards') returning * ;
