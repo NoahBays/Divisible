@@ -156,7 +156,8 @@ app.post("/login", async (req, res) => {
         req.session.save();
 
         // Redirect to /discover route after setting the session
-        res.redirect("/home");
+        console.log("match")
+        res.redirect("/discover");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {
@@ -164,11 +165,13 @@ app.post("/login", async (req, res) => {
         });
       }
     } else {
+      console.log("reg")
       // If the user is not found in the table, redirect to GET /register route
       res.redirect("/registerpage");
     }
   } catch (error) {
     console.error(error);
+    console.log("error")
     // If an error occurs, render the login page and send a generic error message
     res.render("pages/login", { message: "An error occurred" });
   }
@@ -187,6 +190,10 @@ app.get("/logout", (req, res) => {
 // GET
 app.get("/home", (req, res) => {
   res.render("pages/home");
+});
+
+app.get('/test', (req, res) => {
+  res.status(302).redirect('http://127.0.0.1:3000/login');
 });
 
 // *****************************************************
