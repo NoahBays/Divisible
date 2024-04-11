@@ -7,10 +7,10 @@ CREATE TABLE users (
 
 -- Create the friends table
 CREATE TABLE friendships (
-    username VARCHAR(255),
+    user_username VARCHAR(255),
     friend_username VARCHAR(255),
-    PRIMARY KEY (username, friend_username),
-    FOREIGN KEY (username) REFERENCES users(username),
+    PRIMARY KEY (user_username, friend_username),
+    FOREIGN KEY (user_username) REFERENCES users(username),
     FOREIGN KEY (friend_username) REFERENCES users(username)
 );
 
@@ -39,6 +39,6 @@ CREATE TABLE transactions(
   recipient_username VARCHAR(255),
   group_id INT,
   FOREIGN KEY (group_id) REFERENCES groups(id),
-  FOREIGN KEY (sender_id) REFERENCES users(id),
-  FOREIGN KEY (recipient_id) REFERENCES users(id)
+  FOREIGN KEY (sender_username) REFERENCES users(username),
+  FOREIGN KEY (recipient_username) REFERENCES users(username)
 )

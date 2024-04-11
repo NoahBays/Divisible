@@ -116,7 +116,6 @@ app.post("/register", async (req, res) => {
       typeof req.body.password != "string"
     ) {
       console.log("reached");
-      // res.json({ status: 400, message: "Invalid input" });
       throw new Error("Invalid input");
     }
 
