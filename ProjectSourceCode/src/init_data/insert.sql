@@ -10,6 +10,12 @@ VALUES
 ('Logan','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82'),
 --Username and password "a"
 ('a','$2b$10$whBSEpqgXwZRCDV9Sl.wtedvQ7KpM8Onq5W1XXf658xsateej3qIq');
+-- INSERT INTO users
+-- (username, password)
+-- VALUES
+-- ('Noah', 'lmnop'),
+-- ('Ben', 'wxyz'),
+-- ('Jace', 'abcde');
 
 INSERT INTO friendships
 (username, friend_username)
@@ -52,3 +58,8 @@ VALUES
 (2, 'Lucca'),
 (2, 'Jace'),
 (2, 'Noah');
+-- INSERT INTO friendships
+-- (user_username, friend_username)
+-- VALUES
+-- ('Noah', 'Ben'),
+-- ('Ben', 'Jace');

@@ -8,10 +8,10 @@ CREATE TABLE users (
 -- Create the friends table
 DROP TABLE IF EXISTS friendships;
 CREATE TABLE friendships (
-    username VARCHAR(255),
+    user_username VARCHAR(255),
     friend_username VARCHAR(255),
-    --PRIMARY KEY (username, friend_username),
-    FOREIGN KEY (username) REFERENCES users(username),
+    PRIMARY KEY (user_username, friend_username),
+    FOREIGN KEY (user_username) REFERENCES users(username),
     FOREIGN KEY (friend_username) REFERENCES users(username)
 );
 
@@ -38,9 +38,10 @@ CREATE TABLE transactions(
   charge_amount FLOAT,
   charge_desc CHAR(50),
   date VARCHAR(20),
-  sender_id INT,
-  recipient_id INT,
+  sender_username VARCHAR(255),
+  recipient_username VARCHAR(255),
   group_id INT,
-  FOREIGN KEY (group_id) REFERENCES groups(id)
-);
-*/
+  FOREIGN KEY (group_id) REFERENCES groups(id),
+  FOREIGN KEY (sender_username) REFERENCES users(username),
+  FOREIGN KEY (recipient_username) REFERENCES users(username)
+)
