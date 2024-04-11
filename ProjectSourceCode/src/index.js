@@ -103,6 +103,41 @@ app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
 });
 
+app.get('/group', function (req, res) {
+  // Fetch query parameters from the request object
+  var current_id = req.query.id;
+  var current_group_admin = req.query.group_admin_username;
+
+  // Multiple queries using templated strings
+  var current_id = `select * from groups where id = '${current_id}';`;
+  var current_group_admin = `select * from groups where admin = '${current_group_admin}';`;
+
+  // use task to execute multiple queries
+  db.task('get-everything', task => {
+    return task.batch([task.any(current_id), task.any(current_group_admin)]);
+  })
+    // if query execution succeeds
+    // query results can be obtained
+    // as shown below
+    .then(data => {
+      res.status(200).json({
+        current_id: data[0],
+        current_group_admin: data[1],
+      });
+    })
+    // if query execution fails
+    // send error message
+    .catch(err => {
+      console.log('Uh Oh spaghettio');
+      console.log(err);
+      res.status('400').json({
+        current_id: '',
+        current_group_admin: '',
+        error: err,
+      });
+    });
+});
+
 // POST Register
 app.post("/register", async (req, res) => {
   // Get the user data from the request body
