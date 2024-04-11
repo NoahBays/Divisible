@@ -98,6 +98,11 @@ app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
 });
 
+// Manage Account
+app.get("/manageAccount", (req, res) => {
+  res.render("pages/manageAccount");
+});
+
 // * GROUP ENDPOINTS * //
 
 // createGroup
@@ -208,7 +213,7 @@ app.get("/logout", (req, res) => {
   // Destroy the session
   req.session.destroy();
   // render lgoout page
-  res.render("pages/logout", { message: "Successfully Logged Out." });
+  res.render("pages/login", { message: "Successfully Logged Out." });
 });
 
 // *****************************************************
