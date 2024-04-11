@@ -220,6 +220,11 @@ app.get("/home", (req, res) => {
   res.render("pages/home");
 });
 
+app.get("/paymentWindow", (req, res)=> {
+  res.render("pages/paymentWindow");
+})
+
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
