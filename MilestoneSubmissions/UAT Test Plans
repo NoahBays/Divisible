@@ -1,25 +1,29 @@
+Testing will be done with out localhost using Docker:
+
+Add Friends Test:
 User should be able to add friends if providing valid friend credentials
 	Data Needed:
 	Friend username
 If the user provides invalid data or an incorrect name, an error message should display saying there is no user with that info in the db
-	
 
+Group Navigation Test:
 Navigating to a specific group should present a page that contains all of the users in the group and the overall balance, as well as the most recent transactions on the group wallet
 	Data Needed:
 	Group ID
 	Username of everyone in group (accomplished with table joining)
 	Most recent transaction history (accomplished with table joining)
+If the user attempts to navigate to a group that doesn't exist, they should be redirected to the home page and recieve a message that tells them as such.
 
-
+Transaction Window Test:
 Making a transaction (charging someone or paying them) should provide a payment window for that specific user/group. Once submitted, the funds assigned to both the sender and the recipient should update accordingly.
-
 	Data Needed:
 	Group ID
 	Sender username
 	Recipient username
 	Update Transaction Table (id, recipient, sender, date, amount, desc)
-	
+If the data is not consistent, (i.e. the reciepient username is not in the group), then the test should throw error.
 
+Login Test:
 User should be able to login when providing correct credentials
 	Data Needed:
 	Username
