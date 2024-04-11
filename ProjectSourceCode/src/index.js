@@ -105,31 +105,31 @@ app.get("/addFriends", (req, res) => {
 
 // POST Register
 app.post("/register", async (req, res) => {
-  console.log(req.body);
-  //hash the password using bcrypt library
-  // const hash = await bcrypt.hash(req.body.password, 10);
+  // Get the user data from the request body
+  const { username, password } = req.body;
 
-  try {
-    // Insert username and hashed password into the 'users' table
-    if (
-      typeof req.body.username != "string" ||
-      typeof req.body.password != "string"
-    ) {
-      console.log("reached");
-      // res.json({ status: 400, message: "Invalid input" });
-      throw new Error("Invalid input");
-    }
-
-    await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
-      req.body.username,
-      req.body.password,
-    ]);
-
-    res.json({ status: 200, message: "Success" });
-  } catch (error) {
-    console.error(error);
-    res.json({ status: 400, message: "Invalid input" });
+  // Validate the user data
+  if (!username || !password) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
+
+  // Check if the user already exists
+  const existingUser = await db.oneOrNone(
+    "SELECT * FROM users WHERE username = $1",
+    [req.body.username]
+  );
+  if (existingUser) {
+    return res.status(400).json({ error: "User already exists" });
+  }
+
+  // Create a new user
+  await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
+    req.body.username,
+    req.body.password,
+  ]);
+
+  // Send a success response
+  res.status(200).json({ message: "User created successfully" });
 });
 
 // Login
@@ -156,6 +156,7 @@ app.post("/login", async (req, res) => {
         req.session.save();
 
         // Redirect to /discover route after setting the session
+        console.log("match")
         res.redirect("/discover");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
@@ -164,11 +165,13 @@ app.post("/login", async (req, res) => {
         });
       }
     } else {
+      console.log("reg")
       // If the user is not found in the table, redirect to GET /register route
       res.redirect("/register");
     }
   } catch (error) {
     console.error(error);
+    console.log("error")
     // If an error occurs, render the login page and send a generic error message
     res.render("pages/login", { message: "An error occurred" });
   }
@@ -187,6 +190,10 @@ app.get("/logout", (req, res) => {
 // GET
 app.get("/home", (req, res) => {
   res.render("pages/home");
+});
+
+app.get('/test', (req, res) => {
+  res.status(302).redirect('http://127.0.0.1:3000/login');
 });
 
 // *****************************************************
