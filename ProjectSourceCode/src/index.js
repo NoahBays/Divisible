@@ -276,33 +276,6 @@ if(!user_data[2] && !user_data[3])
   })
   .catch(err => {console.log(err);res.redirect('/login');});
 });
-
-
-/*
-//Find user in users table
-  db.one("SELECT * FROM users WHERE username = $1", [req.session.user.username])
-    .then(data => {
-console.log("Data: ", data);
-//Find all friendships under user
-      db.any("SELECT * FROM friendships WHERE username = $1", [data.username])
-      .then(data2 => {
-console.log("Data2: ", data2);
-        res.render("pages/home", {
-          friendships: data2
-        })
-      })
-      .catch(err =>{
-        console.log(err);
-        res.render('pages/login');
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      res.render('pages/login');
-    });
-});
-*/
-
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
