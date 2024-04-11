@@ -1,6 +1,7 @@
 User should be able to add friends if providing valid friend credentials
 	Data Needed:
 	Friend username
+If the user provides invalid data or an incorrect name, an error message should display saying there is no user with that info in the db
 	
 
 Navigating to a specific group should present a page that contains all of the users in the group and the overall balance, as well as the most recent transactions on the group wallet
@@ -18,3 +19,9 @@ Making a transaction (charging someone or paying them) should provide a payment 
 	Recipient username
 	Update Transaction Table (id, recipient, sender, date, amount, desc)
 	
+
+User should be able to login when providing correct credentials
+	Data Needed:
+	Username
+	Password
+On a successful login, the user should be redirected to the home page. On an unsuccessful login, the user should be notified that they entered incorrect data.
