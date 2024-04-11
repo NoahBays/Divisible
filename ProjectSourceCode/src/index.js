@@ -82,7 +82,7 @@ app.get("/welcome", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.redirect("/register");
+  res.redirect("/registerpage");
 });
 
 // Register
@@ -167,7 +167,7 @@ app.post("/login", async (req, res) => {
     } else {
       console.log("reg")
       // If the user is not found in the table, redirect to GET /register route
-      res.redirect("/register");
+      res.redirect("/registerpage");
     }
   } catch (error) {
     console.error(error);

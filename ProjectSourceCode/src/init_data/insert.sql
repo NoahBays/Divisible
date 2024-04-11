@@ -1,0 +1,12 @@
+-- INSERT INTO users
+-- (username, password)
+-- VALUES
+-- ('Noah', 'lmnop'),
+-- ('Ben', 'wxyz'),
+-- ('Jace', 'abcde');
+
+-- INSERT INTO friendships
+-- (user_username, friend_username)
+-- VALUES
+-- ('Noah', 'Ben'),
+-- ('Ben', 'Jace');
