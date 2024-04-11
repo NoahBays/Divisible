@@ -101,19 +101,21 @@ app.get("/createGroup", (req, res) => {
 // createGroup
 // Post
 app.post("/createGroup", async (req, res) => {
+  const { groupName } = req.body;
+  const username = req.session.user.username; // or from req.body, depending on your setup
 
-  // Insert the new group into the 'groups' table
-  const query = "INSERT INTO groups (group_admin_username, group_name) VALUES ($1, $2);";
   try {
-      // Get the current user's username and the group name from the form
-      const adminUsername = req.user.username; // replace this with the actual way to get the current user's username
-      const groupName = req.body.groupName;
+    const maxIdResult = await db.one("SELECT MAX(id) FROM groups;");
+    const newId = maxIdResult.max + 1;
 
-      await db.none(query, [adminUsername, groupName]);
-      res.json({ status: 200, message: "Group created successfully" });
+    // Insert the new group into the 'groups' table
+    const query = "INSERT INTO groups (id, group_admin_username, group_name) VALUES ($1, $2, $3);";
+    await db.none(query, [newId, username, groupName]);
+
+    res.json({ status: 200, message: "Group created successfully" });
   } catch (error) {
-      console.error(error);
-      res.json({ status: 400, message: "Error creating group" });
+    console.error(error);
+    res.json({ status: 400, message: "Failed to create group" });
   }
 });
 

@@ -18,35 +18,33 @@
 <script>
 $(document).ready(function(){
     let usersToAdd = [];
-    const username = "{{username}}";
     // Enable the rest of the form when the confirmNameButton is clicked and the groupName field is not empty
-    $("#confirmNameButton").click(function(e) {
-    e.preventDefault();
-    const groupName = $("#groupName").val();
-    if (groupName !== "") {
-        // Create the group with no members and the current user as the admin
-        $.ajax({
-            url: "/createGroup",
-            type: "POST",
-            data: { groupName: groupName, users: [], admin: username }, // replace 'your_username' with the actual username
-            success: function(response) {
-                if (response.success) {
-                    alert("Group created successfully");
-                    // Enable the rest of the form
-                    $("#search").prop("disabled", false);
-                    $("#addUserButton").prop("disabled", false);
-                    $("button[type='submit']").prop("disabled", false);
-                } else {
-                    alert(response.message);
-                }
+    document.querySelector('#confirmNameButton').addEventListener('click', function() {
+        event.preventDefault();
+        const groupName = document.querySelector('#groupName').value;
+        fetch('/createGroup', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
             },
-            error: function(error) {
-                console.log(error);
+            body: JSON.stringify({
+            group_name: groupName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            // If the group is successfully created, enable the rest of the form
+            if (data.status === 200) {
+                document.querySelector('#search').disabled = false;
+                document.querySelector('#addUserButton').disabled = false;
+                document.querySelector('#createGroupForm button[type="submit"]').disabled = false;
             }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
         });
-    } else {
-        alert("Group name cannot be empty");
-    }
+    });
 });
     $("#search").on("input", function(){
         const searchQuery = $(this).val();
@@ -63,7 +61,7 @@ $(document).ready(function(){
             }
         });
     });
-    $("#createGroupForm").on("submit", function(e) {
+/*    $("#createGroupForm").on("submit", function(e) {
         e.preventDefault();
 
         // Add your group creation logic here
@@ -100,6 +98,7 @@ $(document).ready(function(){
             });
         }
     }); 
+*/
 $("#addUserButton").click(function(e) {
     e.preventDefault();
     const username = $("#search").val();
@@ -131,5 +130,4 @@ $("#addUserButton").click(function(e) {
         }
         });
     });
-});
 </script>

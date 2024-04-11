@@ -36,10 +36,10 @@ VALUES
 ('Lucca', 'Logan');
 
 INSERT INTO groups
-(id, group_admin_username)
+(id, group_admin_username, group_name)
 VALUES
-(1, 'Noah'),
-(2, 'Ben');
+(1, 'Noah', 'Group 1'),
+(2, 'Ben', 'Group 2');
 
 INSERT INTO group_members
 (group_id, username)
