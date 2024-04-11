@@ -12,6 +12,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session"); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
 const bcrypt = require("bcrypt"); //  To hash passwords
 const axios = require("axios"); // To make HTTP requests from our server. We'll learn more about it in Part C.
+const { group } = require("console");
 
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
@@ -82,12 +83,12 @@ app.get("/welcome", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.redirect("/registerpage");
+  res.redirect("/register");
 });
 
 // Register
 // GET
-app.get("/registerpage", (req, res) => {
+app.get("/register", (req, res) => {
   res.render("pages/register", {});
 });
 
@@ -135,7 +136,7 @@ app.post("/register", async (req, res) => {
 // Login
 // GET
 app.get("/login", (req, res) => {
-  res.render("pages/login", {});
+  res.render("pages/login");
 });
 
 // POST
@@ -149,31 +150,36 @@ app.post("/login", async (req, res) => {
     if (user) {
       // Use bcrypt.compare to encrypt the password entered from the user and compare if the entered password is the same as the registered one
       const match = await bcrypt.compare(req.body.password, user.password);
+      console.log("User found");
 
       if (match) {
         // Save the user in the session variable
         req.session.user = user;
         req.session.save();
+        console.log("Password matched successfully");
 
         // Redirect to /discover route after setting the session
-        console.log("match")
-        res.redirect("/discover");
+        res.redirect("/home");
+        console.log("Logged in successfully");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {
           message: "Incorrect username or password",
         });
+        console.log("Password match unsuccessful");
       }
     } else {
       console.log("reg")
       // If the user is not found in the table, redirect to GET /register route
-      res.redirect("/registerpage");
+      res.redirect("/register");
+      console.log("User not found");
     }
   } catch (error) {
     console.error(error);
     console.log("error")
     // If an error occurs, render the login page and send a generic error message
     res.render("pages/login", { message: "An error occurred" });
+    console.log("An error has occurred");
   }
 });
 
@@ -183,19 +189,73 @@ app.get("/logout", (req, res) => {
   // Destroy the session
   req.session.destroy();
   // render lgoout page
-  res.render("pages/logout", { message: "Successfully Logged Out." });
+  res.redirect("/login");
 });
 
 // Home
 // GET
-app.get("/home", (req, res) => {
-  res.render("pages/home");
+app.get('/home', (req, res) => {
+//Find user, friendships, if user is an admin in any groups, members user is a part of
+db.task('Find user, friends, admins, and group members', function(task){
+  return task.batch([
+    task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
+    task.any("SELECT * FROM friendships WHERE user_username = $1", [req.session.user.username]),
+    task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
+    task.any("SELECT * FROM group_members WHERE username = $1", [req.session.user.username])
+  ]);
+})
+  .then(user_data => {
+//Checks for null values for admin status and group member status
+console.log("user_data[2] = ",user_data[2]);
+console.log("user_data[3] = ",user_data[3]);
+if(!user_data[2] && !user_data[3])
+    {
+      res.render("pages/home",{
+        friendships: user_data[1]
+      });
+    }
+    else
+    {
+      //Find groups where user is not admin and find the admin of that group
+      db.task('Find group members when user is admin and when user is not admin', function(task){
+        return task.batch([
+          task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
+          task.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[3][0].group_id])
+        ]);
+      })
+      .then(group_data => {
+        //If user is an admin in a group
+        if(user_data[2])
+        {
+          db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
+          .then(admin_data => {
+            res.render("pages/home",{
+            //If all goes right, send to home page with data
+              friendships: user_data[1],
+              user_is_admin: user_data[2],
+              user_is_admin_members: admin_data,
+              user_is_not_admin: group_data[0][0],
+              user_is_not_admin_members: group_data[1]
+            });
+          })
+          .catch(err => {console.log(err);res.redirect('/login');});
+        }
+        else
+        {
+          //Send to home page with data; user is not an admin
+            res.render("pages/home",{
+              friendships: user_data[1],
+              user_is_admin: user_data[2],
+              user_is_not_admin: group_data[0][0],
+              user_is_not_admin_members: group_data[1],
+            });
+        }
+      })
+      .catch(err => {console.log(err);res.redirect('/login');});
+    }
+  })
+  .catch(err => {console.log(err);res.redirect('/login');});
 });
-
-app.get('/test', (req, res) => {
-  res.status(302).redirect('http://127.0.0.1:3000/login');
-});
-
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************

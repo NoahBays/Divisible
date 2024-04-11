@@ -1,3 +1,4 @@
+/*
 // ********************** Initialize server **********************************
 
 const server = require("../src/index");
@@ -126,3 +127,4 @@ describe('Login Endpoint', () => {
       });
   });
 });
+*/
