@@ -1,13 +1,135 @@
 {{> header}}
-
-{{message}} {{!-- Group created successfully!, then displays the info of the group, same as when clicking on group from home page (group pic, , users in the group, payment history, etc.--}}
-
-<div class="container">
-    <img src="{{group.image}}" alt="{{group.name}}" class="img-thumbnail">
-    <h3>{{group.name}}</h3>
-    <p>Users: {{group.users}}</p>
-    <p>Payment History: {{group.paymentHistory}}</p>
-</div>
-
+<form id="createGroupForm">
+    <div>
+        <input type="text" id="groupName" placeholder="Group Name..." required>
+        <button id="confirmNameButton">Confirm Name</button>
+    </div>
+    <div>
+        <input type="text" id="search" placeholder="Add friends to group..." disabled>
+        <button id="addUserButton" disabled>Add User</button>
+    </div>
+    <div id="dropdown" class="dropdown-content">
+        <ul id="groupMembers"></ul>
+    </div>
+    <button type="submit" disabled>Create Group</button>
+</form>
 
 {{> footer}}
+<script>
+$(document).ready(function(){
+    let usersToAdd = [];
+    const username = "{{username}}";
+    // Enable the rest of the form when the confirmNameButton is clicked and the groupName field is not empty
+    $("#confirmNameButton").click(function(e) {
+    e.preventDefault();
+    const groupName = $("#groupName").val();
+    if (groupName !== "") {
+        // Create the group with no members and the current user as the admin
+        $.ajax({
+            url: "/createGroup",
+            type: "POST",
+            data: { groupName: groupName, users: [], admin: username }, // replace 'your_username' with the actual username
+            success: function(response) {
+                if (response.success) {
+                    alert("Group created successfully");
+                    // Enable the rest of the form
+                    $("#search").prop("disabled", false);
+                    $("#addUserButton").prop("disabled", false);
+                    $("button[type='submit']").prop("disabled", false);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    } else {
+        alert("Group name cannot be empty");
+    }
+});
+    $("#search").on("input", function(){
+        const searchQuery = $(this).val();
+        $.ajax({
+            url: "/searchFriends?q=" + searchQuery,
+            type: "GET",
+            success: function(data) {
+                // clear the friend list
+                $("#groupMembers").empty();
+
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    });
+    $("#createGroupForm").on("submit", function(e) {
+        e.preventDefault();
+
+        // Add your group creation logic here
+        if($("#groupName").val() === "") {
+            alert("Group name cannot be empty");
+            return;
+        }
+        else if(usersToAdd.length === 0) {
+            alert("Group must have at least one member");
+            return;
+        }
+        else if (usersToAdd.length > 25) {
+            alert("Group cannot have more than 25 members");
+            return;
+        }
+        else {
+            // Create the group and add all users from the usersToAdd array
+            $.ajax({
+                url: "/createGroup",
+                type: "POST",
+                data: { groupName: $("#groupName").val(), users: usersToAdd },
+                success: function(response) {
+                    if (response.success) {
+                        alert("Group created successfully");
+                        // Clear the usersToAdd array
+                        usersToAdd = [];
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+    }); 
+$("#addUserButton").click(function(e) {
+    e.preventDefault();
+    const username = $("#search").val();
+    const groupName = $("#groupName").val();
+    // Check if the group name field is empty
+    if (!groupName) {
+        alert("Please provide a group name before adding members.");
+        return;
+    }
+    $.ajax({
+        url: "/addUserToGroup",
+        type: "POST",
+        data: { username: username, groupName: groupName },
+        success: function(response) {
+            if (response.success) {
+                // Add the user to the group members list in the UI
+                $("#groupMembers").append("<li>" + username + "</li>");
+                // Add the user to the usersToAdd array
+                usersToAdd.push(username);
+                // Display the updated list of group members
+                let groupMembersList = $("#groupMembers").children().map(function() {
+                    return $(this).text();
+                }).get().join(', ');
+                alert("Current group members: " + groupMembersList);
+            } 
+            else {
+                alert(response.message);
+            }
+        }
+        });
+    });
+});
+</script>
