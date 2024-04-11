@@ -8,10 +8,10 @@
         <input type="text" id="search" placeholder="Add friends to group..." disabled>
         <button id="addUserButton" disabled>Add User</button>
     </div>
-    <div id="dropdown" class="dropdown-content">
-        <ul id="groupMembers"></ul>
+    <div>
+         <ul id="groupMembers"></ul>
     </div>
-    <button type="submit" disabled>Create Group</button>
+    <button type="submit" id ="createGroupButton" disabled>Create Group</button>
 </form>
 
 {{> footer}}
@@ -39,6 +39,7 @@ $(document).ready(function(){
                 document.querySelector('#search').disabled = false;
                 document.querySelector('#addUserButton').disabled = false;
                 document.querySelector('#createGroupForm button[type="submit"]').disabled = false;
+                document.querySelector('#confirmNameButton').disabled = true;
             }
         })
         .catch((error) => {
@@ -53,14 +54,45 @@ $(document).ready(function(){
             type: "GET",
             success: function(data) {
                 // clear the friend list
-                $("#groupMembers").empty();
-
+                $("#search").empty()");
             },
             error: function(error) {
                 console.log(error);
             }
         });
     });
+document.getElementById("#addUserButton").addEventListener("click", function() {
+    event.preventDefault();
+    const username = document.getElementById("#search").value;
+    const groupName = document.getElementById("#groupName").value;
+    fetch('/addUserToGroup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, groupName }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert(`${username} was added to group ${groupName} successfully`);
+
+            // Create a new list item with the username and append it to the list
+            const listItem = document.createElement("li");
+            listItem.textContent = username;
+            document.getElementById("#groupMembers").appendChild(listItem);
+
+            // Clear the form fields
+            document.getElementById("#search").value = "";
+            document.getElementById("#groupName").value = "";
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+});
 /*    $("#createGroupForm").on("submit", function(e) {
         e.preventDefault();
 
@@ -99,35 +131,4 @@ $(document).ready(function(){
         }
     }); 
 */
-$("#addUserButton").click(function(e) {
-    e.preventDefault();
-    const username = $("#search").val();
-    const groupName = $("#groupName").val();
-    // Check if the group name field is empty
-    if (!groupName) {
-        alert("Please provide a group name before adding members.");
-        return;
-    }
-    $.ajax({
-        url: "/addUserToGroup",
-        type: "POST",
-        data: { username: username, groupName: groupName },
-        success: function(response) {
-            if (response.success) {
-                // Add the user to the group members list in the UI
-                $("#groupMembers").append("<li>" + username + "</li>");
-                // Add the user to the usersToAdd array
-                usersToAdd.push(username);
-                // Display the updated list of group members
-                let groupMembersList = $("#groupMembers").children().map(function() {
-                    return $(this).text();
-                }).get().join(', ');
-                alert("Current group members: " + groupMembersList);
-            } 
-            else {
-                alert(response.message);
-            }
-        }
-        });
-    });
 </script>
