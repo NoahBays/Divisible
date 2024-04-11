@@ -76,20 +76,29 @@ app.use(
 
 // TODO - Include your API routes here
 
-// dummy route from lab 11
+// * MISCELLANEOUS ENDPOINTS * //
+
+// Dummy endpoint from lab 11
 app.get("/welcome", (req, res) => {
   res.json({ status: "success", message: "Welcome!" });
 });
 
+// Home
 app.get("/", (req, res) => {
-  res.redirect("/registerpage");
+  res.redirect("/register");
 });
 
-// Register
+// Home
 // GET
-app.get("/registerpage", (req, res) => {
-  res.render("pages/register", {});
+app.get("/home", (req, res) => {
+  res.render("pages/home");
 });
+
+app.get("/test", (req, res) => {
+  res.status(302).redirect("http://127.0.0.1:3000/login");
+});
+
+// * GROUP ENDPOINTS * //
 
 // createGroup
 // GET
@@ -101,6 +110,12 @@ app.get("/createGroup", (req, res) => {
 // GET
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
+});
+
+// * REGISTER ENDPOINTS * //
+// GET
+app.get("/register", (req, res) => {
+  res.render("pages/register", {});
 });
 
 // POST Register
@@ -119,20 +134,30 @@ app.post("/register", async (req, res) => {
     [req.body.username]
   );
   if (existingUser) {
-    return res.status(400).json({ error: "User already exists" });
+    //return res.status(400).json({ error: "User already exists" });
+    res
+      .status(400)
+      .render("pages/register", { message: "User already exists" });
+    return;
   }
+
+  // Password Hashing
+  const hash = await bcrypt.hash(req.body.password, 10);
 
   // Create a new user
   await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
     req.body.username,
-    req.body.password,
+    hash,
   ]);
 
   // Send a success response
-  res.status(200).json({ message: "User created successfully" });
+  res
+    .status(200)
+    .render("pages/login", { message: "User created successfully" });
 });
 
-// Login
+// * LOGIN ENDPOINTS * //
+
 // GET
 app.get("/login", (req, res) => {
   res.render("pages/login", {});
@@ -156,8 +181,8 @@ app.post("/login", async (req, res) => {
         req.session.save();
 
         // Redirect to /discover route after setting the session
-        console.log("match")
-        res.redirect("/discover");
+        console.log("match");
+        res.redirect("/home");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {
@@ -165,35 +190,25 @@ app.post("/login", async (req, res) => {
         });
       }
     } else {
-      console.log("reg")
+      console.log("register");
       // If the user is not found in the table, redirect to GET /register route
-      res.redirect("/registerpage");
+      res.redirect("/register");
     }
   } catch (error) {
     console.error(error);
-    console.log("error")
     // If an error occurs, render the login page and send a generic error message
     res.render("pages/login", { message: "An error occurred" });
   }
 });
 
-// Logout
+// * LOGOUT ENDPOINTS * //
+
 // GET
 app.get("/logout", (req, res) => {
   // Destroy the session
   req.session.destroy();
   // render lgoout page
   res.render("pages/logout", { message: "Successfully Logged Out." });
-});
-
-// Home
-// GET
-app.get("/home", (req, res) => {
-  res.render("pages/home");
-});
-
-app.get('/test', (req, res) => {
-  res.status(302).redirect('http://127.0.0.1:3000/login');
 });
 
 // *****************************************************
