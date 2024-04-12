@@ -219,15 +219,13 @@ app.get('/home', (req, res) => {
 db.task('Find user, friends, admins, and group members', function(task){
   return task.batch([
     task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
-    task.any("SELECT * FROM friendships WHERE username = $1", [req.session.user.username]),
+    task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
     task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
-    task.any("SELECT * FROM group_members WHERE username = $1", [req.session.user.username])
+    task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username])
   ]);
 })
   .then(user_data => {
 //Checks for null values for admin status and group member status
-console.log("user_data[2] = ",user_data[2]);
-console.log("user_data[3] = ",user_data[3]);
 if(!user_data[2] && !user_data[3])
     {
       res.render("pages/home",{
@@ -240,7 +238,7 @@ if(!user_data[2] && !user_data[3])
       db.task('Find group members when user is admin and when user is not admin', function(task){
         return task.batch([
           task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
-          task.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[3][0].group_id])
+          task.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][0].group_id])
         ]);
       })
       .then(group_data => {
@@ -252,10 +250,10 @@ if(!user_data[2] && !user_data[3])
             res.render("pages/home",{
             //If all goes right, send to home page with data
               friendships: user_data[1],
-              user_is_admin: user_data[2],
-              user_is_admin_members: admin_data,
-              user_is_not_admin: group_data[0][0],
-              user_is_not_admin_members: group_data[1]
+              admin: user_data[2],
+              admin_members: admin_data,
+              not_admin: group_data[0][0],
+              not_admin_members: group_data[1]
             });
           })
           .catch(err => {console.log(err);res.redirect('/login');});
@@ -265,8 +263,8 @@ if(!user_data[2] && !user_data[3])
           //Send to home page with data; user is not an admin
             res.render("pages/home",{
               friendships: user_data[1],
-              user_is_admin: user_data[2],
-              user_is_not_admin: group_data[0][0],
+              admin: user_data[2],
+              not_admin: group_data[0][0],
               user_is_not_admin_members: group_data[1],
             });
         }

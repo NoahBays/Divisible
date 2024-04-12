@@ -27,22 +27,26 @@
         <table class="table">
             <tbody>
 <!--If user is admin in a group -->
-            {{#if user_is_admin}}
+            {{#if admin}}
             <tr>
-                <th>{{user_is_admin.group_admin_username}}</th>
+                <th>{{admin.group_admin_username}}</th>
+                <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{admin.group_name}}</a></th>
             </tr>
             {{/if}}
             <tr>
-                {{#each user_is_admin_members}}
+                {{#if admin}}
+                {{/if}}
+                {{#each admin_members}}
                     <td>{{this.username}}</td>
                 {{/each}}
             </tr>
 <!--If user is a member in a group-->
-            {{#if user_is_not_admin}}
-                <th>{{user_is_not_admin.group_admin_username}}</th>
+            {{#if not_admin}}
+                <th>{{not_admin.group_admin_username}}</th>
+                <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{not_admin.group_name}}</a></th>
             {{/if}}
             <tr>
-                {{#each user_is_not_admin_members}}
+                {{#each not_admin_members}}
                     <td>{{this.username}}</td>
                 {{/each}}
             </tr>

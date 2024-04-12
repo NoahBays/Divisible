@@ -8,10 +8,10 @@ CREATE TABLE users (
 -- Create the friends table
 DROP TABLE IF EXISTS friendships;
 CREATE TABLE friendships (
-    username VARCHAR(255),
+    user_username VARCHAR(255),
     friend_username VARCHAR(255),
     --PRIMARY KEY (username, friend_username),
-    FOREIGN KEY (username) REFERENCES users(username),
+    FOREIGN KEY (user_username) REFERENCES users(username),
     FOREIGN KEY (friend_username) REFERENCES users(username)
 );
 
@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS groups;
 CREATE TABLE groups (
     id INT PRIMARY KEY,
     group_admin_username VARCHAR(255),
+    group_name VARCHAR(255),
     FOREIGN KEY (group_admin_username) REFERENCES users(username)
 );
 

@@ -12,7 +12,7 @@ VALUES
 ('a','$2b$10$whBSEpqgXwZRCDV9Sl.wtedvQ7KpM8Onq5W1XXf658xsateej3qIq');
 
 INSERT INTO friendships
-(username, friend_username)
+(user_username, friend_username)
 VALUES
 ('Noah', 'Ben'),
 ('Ben', 'Noah'),
@@ -36,10 +36,10 @@ VALUES
 ('Lucca', 'Logan');
 
 INSERT INTO groups
-(id, group_admin_username)
+(id, group_admin_username, group_name)
 VALUES
-(1, 'Noah'),
-(2, 'Ben');
+(1, 'Noah', 'WW'),
+(2, 'Ben', 'Elephant');
 
 INSERT INTO group_members
 (group_id, username)
