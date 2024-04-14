@@ -148,6 +148,32 @@ app.post("/addUserToGroup", (req, res) => {
   res.json({ status: "success", message: `${username} will be added to group` });
 });
 
+app.post("/addGroupMembers", async (req, res) => {
+  const { groupName, usernames } = req.body;
+  db.one('SELECT id FROM groups WHERE group_name = $1', [groupName])
+  .then(data => {
+    console.log(data.id); // this will log the group id
+  })
+  .catch(error => {
+    console.error(error);
+  });
+
+  try {
+    // Start a database transaction
+    await db.tx(async t => {
+      // For each username in the array, insert a new row in the group_members table
+      for (const username of usernames) {
+        await t.none("INSERT INTO group_members (group_id, username) VALUES ($1, $2)", [data.id, username]);
+      }
+    });
+
+    res.json({ status: 200, message: "Group members added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: 400, message: "Failed to add group members" });
+  }
+});
+
 
 // createGroup
 // GET

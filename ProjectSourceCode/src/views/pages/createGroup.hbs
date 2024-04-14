@@ -11,7 +11,7 @@
     <div>
          <ul id="groupMembers"></ul>
     </div>
-    <button type="submit" id ="createGroupButton" disabled>Create Group</button>
+    <button type="submit" id = "submitButton" disabled>Create Group</button>
 </form>
 
 {{> footer}}
@@ -22,6 +22,10 @@ $(document).ready(function(){
     document.querySelector('#confirmNameButton').addEventListener('click', function() {
         event.preventDefault();
         const groupName = document.querySelector('#groupName').value;
+        if (groupName === "") {
+            alert("Group name cannot be empty");
+            return;
+        }
         fetch('/createGroup', {
             method: 'POST',
             headers: {
@@ -47,24 +51,26 @@ $(document).ready(function(){
         });
     });
 });
-    $("#search").on("input", function(){
-        const searchQuery = $(this).val();
-        $.ajax({
-            url: "/searchFriends?q=" + searchQuery,
-            type: "GET",
-            success: function(data) {
-                // clear the friend list
-                $("#search").empty()");
-            },
-            error: function(error) {
-                console.log(error);
-            }
-        });
-    });
-document.getElementById("#addUserButton").addEventListener("click", function() {
+document.querySelector("#search").addEventListener("input", function() {
+    const searchQuery = this.value;
+    fetch("/searchFriends?q=" + searchQuery)
+        .then(response => response.json())
+        .then(data => {
+            // clear the friend list
+
+            // populate the friend list with the returned data
+            data.forEach(function(friend) {
+                const li = document.createElement('li');
+                li.textContent = friend.username;
+                document.querySelector("#groupMembers").appendChild(li);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+});
+document.querySelector("#addUserButton").addEventListener("click", function() {
     event.preventDefault();
-    const username = document.getElementById("#search").value;
-    const groupName = document.getElementById("#groupName").value;
+    const username = document.getElementById("search").value;
+    const groupName = document.getElementById("groupName").value;
     fetch('/addUserToGroup', {
         method: 'POST',
         headers: {
@@ -75,16 +81,13 @@ document.getElementById("#addUserButton").addEventListener("click", function() {
     .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
-            alert(`${username} was added to group ${groupName} successfully`);
-
+            alert(`${username} was added to group ${groupName}`);
             // Create a new list item with the username and append it to the list
             const listItem = document.createElement("li");
             listItem.textContent = username;
-            document.getElementById("#groupMembers").appendChild(listItem);
-
-            // Clear the form fields
-            document.getElementById("#search").value = "";
-            document.getElementById("#groupName").value = "";
+            document.querySelector("#groupMembers").appendChild(listItem);
+            // Clear the search field
+            document.querySelector("#search").value = "";
         } else {
             alert(data.message);
         }
@@ -93,42 +96,29 @@ document.getElementById("#addUserButton").addEventListener("click", function() {
         console.error('Error:', error);
     });
 });
-/*    $("#createGroupForm").on("submit", function(e) {
-        e.preventDefault();
-
-        // Add your group creation logic here
-        if($("#groupName").val() === "") {
-            alert("Group name cannot be empty");
-            return;
+document.querySelector('#submitButton').addEventListener('click', function(event) {
+    event.preventDefault();
+    const groupMembersNodeList = document.querySelectorAll('#groupMembers li');
+    const groupMembers = Array.from(groupMembersNodeList).map(li => li.textContent);
+    const groupName = document.querySelector('#groupName').value;
+    fetch('/addGroupMembers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ groupName, groupMembers }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert(`Group ${groupName} was created with members ${groupMembers.join(', ')}`);
+            window.location.href = `/groups/${groupName}`;
+        } else {
+            alert(data.message);
         }
-        else if(usersToAdd.length === 0) {
-            alert("Group must have at least one member");
-            return;
-        }
-        else if (usersToAdd.length > 25) {
-            alert("Group cannot have more than 25 members");
-            return;
-        }
-        else {
-            // Create the group and add all users from the usersToAdd array
-            $.ajax({
-                url: "/createGroup",
-                type: "POST",
-                data: { groupName: $("#groupName").val(), users: usersToAdd },
-                success: function(response) {
-                    if (response.success) {
-                        alert("Group created successfully");
-                        // Clear the usersToAdd array
-                        usersToAdd = [];
-                    } else {
-                        alert(response.message);
-                    }
-                },
-                error: function(error) {
-                    console.log(error);
-                }
-            });
-        }
-    }); 
-*/
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+});
 </script>

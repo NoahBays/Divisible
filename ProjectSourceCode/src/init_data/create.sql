@@ -27,12 +27,12 @@ CREATE TABLE groups (
 -- Create the group_members table
 DROP TABLE IF EXISTS group_members;
 CREATE TABLE group_members (
-    group_id INT,
-    username VARCHAR(255),
-    --PRIMARY KEY (group_id, username),
-    FOREIGN KEY (group_id) REFERENCES groups(id),
-    FOREIGN KEY (username) REFERENCES users(username)
+    username VARCHAR(255) REFERENCES users(username),
+    group_id INT REFERENCES groups(id),
+    PRIMARY KEY (username, group_id)
 );
+
+
 /*
 --Create transaction table
 CREATE TABLE transactions(
