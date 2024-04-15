@@ -102,12 +102,10 @@ app.get('/home', (req, res) => {
     ]);
   })
     .then(user_data => {
-console.log("user_data[2]: ", user_data[2]);
-console.log("user_data[3]: ", user_data[3][0]);
+
   //Checks for null values for admin status and group member status
   if(!user_data[2] && !user_data[3][0])
       {
-console.log("Quick exit");
         res.render("pages/home",{
           friendships: user_data[1]
         });
@@ -127,7 +125,6 @@ console.log("Quick exit");
           {
             db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
             .then(admin_data => {
-console.log("Admin data exit");
               res.render("pages/home",{
               //If all goes right, send to home page with data
                 friendships: user_data[1],
@@ -142,12 +139,11 @@ console.log("Admin data exit");
           else
           {
             //Send to home page with data; user is not an admin
-console.log("Non admin exit");
               res.render("pages/home",{
                 friendships: user_data[1],
                 admin: user_data[2],
                 not_admin: group_data[0][0],
-                user_is_not_admin_members: group_data[1],
+                not_admin_members: group_data[1],
               });
           }
         })
