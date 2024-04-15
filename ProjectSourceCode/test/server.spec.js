@@ -13,6 +13,9 @@ const { assert, expect } = chai;
 // test/some-test-file.js
 
 // ... write your tests ...
+// test/some-test-file.js
+
+// ... write your tests ...
 
 // ********************** DEFAULT WELCOME TESTCASE ****************************
 
@@ -96,7 +99,7 @@ describe("Testing Render", () => {
       });
   });
 });
-
+*/
 // describe("Login Endpoint", () => {
 //   // Positive case
 //   it("should log in successfully with correct credentials", (done) => {
@@ -128,4 +131,3 @@ describe("Testing Render", () => {
 //       });
 //   });
 // });
-*/

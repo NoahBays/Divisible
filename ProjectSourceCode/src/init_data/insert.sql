@@ -44,8 +44,8 @@ VALUES
 INSERT INTO groups
 (id, group_admin_username, group_name)
 VALUES
-(1, 'Noah', 'Group 1'),
-(2, 'Ben', 'Group 2');
+(1, 'Noah', 'WW'),
+(2, 'Ben', 'Elephant');
 
 INSERT INTO group_members
 (group_id, username)
@@ -58,8 +58,3 @@ VALUES
 (2, 'Lucca'),
 (2, 'Jace'),
 (2, 'Noah');
--- INSERT INTO friendships
--- (user_username, friend_username)
--- VALUES
--- ('Noah', 'Ben'),
--- ('Ben', 'Jace');

@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS friendships;
 CREATE TABLE friendships (
     user_username VARCHAR(255),
     friend_username VARCHAR(255),
-    PRIMARY KEY (user_username, friend_username),
+    --PRIMARY KEY (username, friend_username),
     FOREIGN KEY (user_username) REFERENCES users(username),
     FOREIGN KEY (friend_username) REFERENCES users(username)
 );
@@ -42,7 +42,6 @@ CREATE TABLE transactions(
   sender_username VARCHAR(255),
   recipient_username VARCHAR(255),
   group_id INT,
-  FOREIGN KEY (group_id) REFERENCES groups(id),
-  FOREIGN KEY (sender_username) REFERENCES users(username),
-  FOREIGN KEY (recipient_username) REFERENCES users(username)
-)*/
+  FOREIGN KEY (group_id) REFERENCES groups(id)
+);
+*/

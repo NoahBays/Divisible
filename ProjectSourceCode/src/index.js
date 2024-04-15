@@ -80,20 +80,83 @@ app.use(
 // * MISCELLANEOUS ENDPOINTS * //
 
 // Dummy endpoint from lab 11
+// * MISCELLANEOUS ENDPOINTS * //
+
+// Dummy endpoint from lab 11
 app.get("/welcome", (req, res) => {
   res.json({ status: "success", message: "Welcome!" });
 });
 
+// Home
 // Home
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
 
 // Home
+// Home
 // GET
-app.get("/home", (req, res) => {
-  res.render("pages/home");
-});
+app.get('/home', (req, res) => {
+  //Find user, friendships, if user is an admin in any groups, members user is a part of
+  db.task('Find user, friends, admins, and group members', function(task){
+    return task.batch([
+      task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
+      task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
+      task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
+      task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username])
+    ]);
+  })
+    .then(user_data => {
+
+  //Checks for null values for admin status and group member status
+  if(!user_data[2] && !user_data[3][0])
+      {
+        res.render("pages/home",{
+          friendships: user_data[1]
+        });
+      }
+      else
+      {
+        //Find groups where user is not admin and find the admin of that group
+        db.task('Find group members when user is admin and when user is not admin', function(task){
+          return task.batch([
+            task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
+            task.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][0].group_id])
+          ]);
+        })
+        .then(group_data => {
+          //If user is an admin in a group
+          if(user_data[2])
+          {
+            db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
+            .then(admin_data => {
+              res.render("pages/home",{
+              //If all goes right, send to home page with data
+                friendships: user_data[1],
+                admin: user_data[2],
+                admin_members: admin_data,
+                not_admin: group_data[0][0],
+                not_admin_members: group_data[1]
+              });
+            })
+            .catch(err => {console.log(err);res.redirect('/login');});
+          }
+          else
+          {
+            //Send to home page with data; user is not an admin
+              res.render("pages/home",{
+                friendships: user_data[1],
+                admin: user_data[2],
+                not_admin: group_data[0][0],
+                not_admin_members: group_data[1],
+              });
+          }
+        })
+        .catch(err => {console.log(err);res.redirect('/login');});
+      }
+    })
+    .catch(err => {console.log(err);res.redirect('/login');});
+  });
 
 app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
@@ -268,7 +331,6 @@ app.post("/login", async (req, res) => {
         // Redirect to /discover route after setting the session
         console.log("match");
         res.redirect("/home");
-        console.log("Logged in successfully");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {
