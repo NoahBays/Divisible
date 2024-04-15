@@ -24,32 +24,36 @@
 <div class="container">
     <div class="row">
         <h2 style="text-decoration:underline">Groups list</h2>        
-        <table class="table">
+        <table class="table" style="text-align:center">
             <tbody>
 <!--If user is admin in a group -->
             {{#if admin}}
             <tr>
-                <th>{{admin.group_admin_username}}</th>
                 <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{admin.group_name}}</a></th>
             </tr>
-            {{/if}}
             <tr>
-                {{#if admin}}
-                {{/if}}
+                <th>{{admin.group_admin_username}}</th>
                 {{#each admin_members}}
                     <td>{{this.username}}</td>
                 {{/each}}
             </tr>
+            {{/if}}
+            </tbody>
+        </table>
+        <table class="table" style="text-align:center">
+            <tbody>    
 <!--If user is a member in a group-->
             {{#if not_admin}}
-                <th>{{not_admin.group_admin_username}}</th>
-                <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{not_admin.group_name}}</a></th>
-            {{/if}}
             <tr>
+                <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{not_admin.group_name}}</a></th>
+            </tr>
+            <tr>
+                <th>{{not_admin.group_admin_username}}</th>
                 {{#each not_admin_members}}
                     <td>{{this.username}}</td>
                 {{/each}}
             </tr>
+            {{/if}}
             </tbody>
         </table>
     </div>

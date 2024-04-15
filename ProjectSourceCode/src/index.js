@@ -77,20 +77,96 @@ app.use(
 
 // TODO - Include your API routes here
 
-// dummy route from lab 11
+// * MISCELLANEOUS ENDPOINTS * //
+
+// Dummy endpoint from lab 11
 app.get("/welcome", (req, res) => {
   res.json({ status: "success", message: "Welcome!" });
 });
 
+// Home
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
 
-// Register
+// Home
 // GET
-app.get("/register", (req, res) => {
-  res.render("pages/register", {});
+app.get('/home', (req, res) => {
+  //Find user, friendships, if user is an admin in any groups, members user is a part of
+  db.task('Find user, friends, admins, and group members', function(task){
+    return task.batch([
+      task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
+      task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
+      task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
+      task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username])
+    ]);
+  })
+    .then(user_data => {
+console.log("user_data[2]: ", user_data[2]);
+console.log("user_data[3]: ", user_data[3][0]);
+  //Checks for null values for admin status and group member status
+  if(!user_data[2] && !user_data[3][0])
+      {
+console.log("Quick exit");
+        res.render("pages/home",{
+          friendships: user_data[1]
+        });
+      }
+      else
+      {
+        //Find groups where user is not admin and find the admin of that group
+        db.task('Find group members when user is admin and when user is not admin', function(task){
+          return task.batch([
+            task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
+            task.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][0].group_id])
+          ]);
+        })
+        .then(group_data => {
+          //If user is an admin in a group
+          if(user_data[2])
+          {
+            db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
+            .then(admin_data => {
+console.log("Admin data exit");
+              res.render("pages/home",{
+              //If all goes right, send to home page with data
+                friendships: user_data[1],
+                admin: user_data[2],
+                admin_members: admin_data,
+                not_admin: group_data[0][0],
+                not_admin_members: group_data[1]
+              });
+            })
+            .catch(err => {console.log(err);res.redirect('/login');});
+          }
+          else
+          {
+            //Send to home page with data; user is not an admin
+console.log("Non admin exit");
+              res.render("pages/home",{
+                friendships: user_data[1],
+                admin: user_data[2],
+                not_admin: group_data[0][0],
+                user_is_not_admin_members: group_data[1],
+              });
+          }
+        })
+        .catch(err => {console.log(err);res.redirect('/login');});
+      }
+    })
+    .catch(err => {console.log(err);res.redirect('/login');});
+  });
+
+app.get("/test", (req, res) => {
+  res.status(302).redirect("http://127.0.0.1:3000/login");
 });
+
+// Manage Account
+app.get("/manageAccount", (req, res) => {
+  res.render("pages/manageAccount");
+});
+
+// * GROUP ENDPOINTS * //
 
 // createGroup
 // GET
@@ -104,58 +180,52 @@ app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
 });
 
-// POST Register
-// app.post("/register", async (req, res) => {
-//   console.log(req.body);
-//   //hash the password using bcrypt library
-//   // const hash = await bcrypt.hash(req.body.password, 10);
-
-//   try {
-//     // Insert username and hashed password into the 'users' table
-//     if (
-//       typeof req.body.username === undefined ||
-//       typeof req.body.password === undefined
-//     ) {
-//       console.log("reached");
-//       throw new Error("Invalid input");
-//     }
-
-//     await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
-//       req.body.username,
-//       req.body.password,
-//     ]);
-
-//     res.json({ status: 200, message: "Success" });
-//   } catch (error) {
-//     console.error(error);
-//     res.json({ status: 400, message: "Invalid input" });
-//   }
-// });
-
-app.post("/register", async (req, res) => {
-  if (req.body.password && req.body.username) {
-    const hash = await bcrypt.hash(req.body.password, 10);
-
-    const query = "INSERT INTO users (username, password) VALUES ($1, $2);";
-    db.any(query, [req.body.username, hash])
-      .then((data) => {
-        //res.json({ status: 200, message: "Success" });
-        res.redirect("/login");
-        console.log("Registered successfully");
-      })
-      .catch((err) => {
-        //res.json({ status: 400, message: "Invalid input" });
-        res.redirect("/register");
-        console.log("Invalid input");
-      });
-  } else {
-    //res.json({ status: 400, message: "No input provided" });
-    res.redirect("/register");
-    console.log("No input provided");
-  }
+// * REGISTER ENDPOINTS * //
+// GET
+app.get("/register", (req, res) => {
+  res.render("pages/register", {});
 });
 
-// Login
+// POST Register
+app.post("/register", async (req, res) => {
+  // Get the user data from the request body
+  const { username, password } = req.body;
+
+  // Validate the user data
+  if (!username || !password) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  // Check if the user already exists
+  const existingUser = await db.oneOrNone(
+    "SELECT * FROM users WHERE username = $1",
+    [req.body.username]
+  );
+  if (existingUser) {
+    //return res.status(400).json({ error: "User already exists" });
+    res
+      .status(400)
+      .render("pages/register", { message: "User already exists" });
+    return;
+  }
+
+  // Password Hashing
+  const hash = await bcrypt.hash(req.body.password, 10);
+
+  // Create a new user
+  await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
+    req.body.username,
+    hash,
+  ]);
+
+  // Send a success response
+  res
+    .status(200)
+    .render("pages/login", { message: "User created successfully" });
+});
+
+// * LOGIN ENDPOINTS * //
+
 // GET
 app.get("/login", (req, res) => {
   res.render("pages/login");
@@ -181,8 +251,8 @@ app.post("/login", async (req, res) => {
         console.log("Password matched successfully");
 
         // Redirect to /discover route after setting the session
+        console.log("match");
         res.redirect("/home");
-        console.log("Logged in successfully");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {
@@ -191,9 +261,9 @@ app.post("/login", async (req, res) => {
         console.log("Password match unsuccessful");
       }
     } else {
+      console.log("register");
       // If the user is not found in the table, redirect to GET /register route
       res.redirect("/register");
-      console.log("User not found");
     }
   } catch (error) {
     console.error(error);
@@ -203,77 +273,16 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Logout
+// * LOGOUT ENDPOINTS * //
+
 // GET
 app.get("/logout", (req, res) => {
   // Destroy the session
   req.session.destroy();
   // render lgoout page
-  res.redirect("/login");
+  res.render("pages/login", { message: "Successfully Logged Out." });
 });
 
-// Home
-// GET
-app.get('/home', (req, res) => {
-//Find user, friendships, if user is an admin in any groups, members user is a part of
-db.task('Find user, friends, admins, and group members', function(task){
-  return task.batch([
-    task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
-    task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
-    task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
-    task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username])
-  ]);
-})
-  .then(user_data => {
-//Checks for null values for admin status and group member status
-if(!user_data[2] && !user_data[3])
-    {
-      res.render("pages/home",{
-        friendships: user_data[1]
-      });
-    }
-    else
-    {
-      //Find groups where user is not admin and find the admin of that group
-      db.task('Find group members when user is admin and when user is not admin', function(task){
-        return task.batch([
-          task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
-          task.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][0].group_id])
-        ]);
-      })
-      .then(group_data => {
-        //If user is an admin in a group
-        if(user_data[2])
-        {
-          db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
-          .then(admin_data => {
-            res.render("pages/home",{
-            //If all goes right, send to home page with data
-              friendships: user_data[1],
-              admin: user_data[2],
-              admin_members: admin_data,
-              not_admin: group_data[0][0],
-              not_admin_members: group_data[1]
-            });
-          })
-          .catch(err => {console.log(err);res.redirect('/login');});
-        }
-        else
-        {
-          //Send to home page with data; user is not an admin
-            res.render("pages/home",{
-              friendships: user_data[1],
-              admin: user_data[2],
-              not_admin: group_data[0][0],
-              user_is_not_admin_members: group_data[1],
-            });
-        }
-      })
-      .catch(err => {console.log(err);res.redirect('/login');});
-    }
-  })
-  .catch(err => {console.log(err);res.redirect('/login');});
-});
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************

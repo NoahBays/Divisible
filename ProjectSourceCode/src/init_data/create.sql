@@ -39,8 +39,8 @@ CREATE TABLE transactions(
   charge_amount FLOAT,
   charge_desc CHAR(50),
   date VARCHAR(20),
-  sender_id INT,
-  recipient_id INT,
+  sender_username VARCHAR(255),
+  recipient_username VARCHAR(255),
   group_id INT,
   FOREIGN KEY (group_id) REFERENCES groups(id)
 );
