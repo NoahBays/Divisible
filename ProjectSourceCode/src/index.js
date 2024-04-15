@@ -103,9 +103,9 @@ app.get('/home', (req, res) => {
   })
     .then(user_data => {
 console.log("user_data[2]: ", user_data[2]);
-console.log("user_data[3]: ", user_data[3]);
+console.log("user_data[3]: ", user_data[3][0]);
   //Checks for null values for admin status and group member status
-  if(!user_data[2] && !user_data[3])
+  if(!user_data[2] && !user_data[3][0])
       {
 console.log("Quick exit");
         res.render("pages/home",{
