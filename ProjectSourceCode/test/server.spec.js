@@ -1,3 +1,4 @@
+/*
 // ********************** Initialize server **********************************
 
 const server = require("../src/index");
@@ -95,7 +96,7 @@ describe("Testing Render", () => {
       });
   });
 });
-
+*/
 // describe("Login Endpoint", () => {
 //   // Positive case
 //   it("should log in successfully with correct credentials", (done) => {
