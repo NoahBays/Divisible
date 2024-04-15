@@ -18,7 +18,7 @@ VALUES
 -- ('Jace', 'abcde');
 
 INSERT INTO friendships
-(username, friend_username)
+(user_username, friend_username)
 VALUES
 ('Noah', 'Ben'),
 ('Ben', 'Noah'),

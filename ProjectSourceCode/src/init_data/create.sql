@@ -44,4 +44,4 @@ CREATE TABLE transactions(
   FOREIGN KEY (group_id) REFERENCES groups(id),
   FOREIGN KEY (sender_username) REFERENCES users(username),
   FOREIGN KEY (recipient_username) REFERENCES users(username)
-)
+)*/

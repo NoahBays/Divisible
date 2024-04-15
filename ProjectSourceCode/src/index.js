@@ -77,20 +77,34 @@ app.use(
 
 // TODO - Include your API routes here
 
-// dummy route from lab 11
+// * MISCELLANEOUS ENDPOINTS * //
+
+// Dummy endpoint from lab 11
 app.get("/welcome", (req, res) => {
   res.json({ status: "success", message: "Welcome!" });
 });
 
+// Home
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
 
-// Register
+// Home
 // GET
-app.get("/register", (req, res) => {
-  res.render("pages/register", {});
+app.get("/home", (req, res) => {
+  res.render("pages/home");
 });
+
+app.get("/test", (req, res) => {
+  res.status(302).redirect("http://127.0.0.1:3000/login");
+});
+
+// Manage Account
+app.get("/manageAccount", (req, res) => {
+  res.render("pages/manageAccount");
+});
+
+// * GROUP ENDPOINTS * //
 
 // createGroup
 // GET
@@ -102,6 +116,12 @@ app.get("/createGroup", (req, res) => {
 // GET
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
+});
+
+// * REGISTER ENDPOINTS * //
+// GET
+app.get("/register", (req, res) => {
+  res.render("pages/register", {});
 });
 
 // POST Register
@@ -120,20 +140,30 @@ app.post("/register", async (req, res) => {
     [req.body.username]
   );
   if (existingUser) {
-    return res.status(400).json({ error: "User already exists" });
+    //return res.status(400).json({ error: "User already exists" });
+    res
+      .status(400)
+      .render("pages/register", { message: "User already exists" });
+    return;
   }
+
+  // Password Hashing
+  const hash = await bcrypt.hash(req.body.password, 10);
 
   // Create a new user
   await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
     req.body.username,
-    req.body.password,
+    hash,
   ]);
 
   // Send a success response
-  res.status(200).json({ message: "User created successfully" });
+  res
+    .status(200)
+    .render("pages/login", { message: "User created successfully" });
 });
 
-// Login
+// * LOGIN ENDPOINTS * //
+
 // GET
 app.get("/login", (req, res) => {
   res.render("pages/login");
@@ -159,6 +189,7 @@ app.post("/login", async (req, res) => {
         console.log("Password matched successfully");
 
         // Redirect to /discover route after setting the session
+        console.log("match");
         res.redirect("/home");
         console.log("Logged in successfully");
       } else {
@@ -169,9 +200,9 @@ app.post("/login", async (req, res) => {
         console.log("Password match unsuccessful");
       }
     } else {
+      console.log("register");
       // If the user is not found in the table, redirect to GET /register route
       res.redirect("/register");
-      console.log("User not found");
     }
   } catch (error) {
     console.error(error);
@@ -181,105 +212,15 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Logout
+// * LOGOUT ENDPOINTS * //
+
 // GET
 app.get("/logout", (req, res) => {
   // Destroy the session
   req.session.destroy();
   // render lgoout page
-  res.redirect("/login");
+  res.render("pages/login", { message: "Successfully Logged Out." });
 });
-
-// Home
-// GET
-app.get('/home', (req, res) => {
-//Find user, friendships, if user is an admin in any groups, members user is a part of
-db.task('Find user, friends, admins, and group members', function(task){
-  return task.batch([
-    task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
-    task.any("SELECT * FROM friendships WHERE username = $1", [req.session.user.username]),
-    task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
-    task.any("SELECT * FROM group_members WHERE username = $1", [req.session.user.username])
-  ]);
-})
-  .then(user_data => {
-//Checks for null values for admin status and group member status
-console.log("user_data[2] = ",user_data[2]);
-console.log("user_data[3] = ",user_data[3]);
-if(!user_data[2] && !user_data[3])
-    {
-      res.render("pages/home",{
-        friendships: user_data[1]
-      });
-    }
-    else
-    {
-      //Find groups where user is not admin and find the admin of that group
-      db.task('Find group members when user is admin and when user is not admin', function(task){
-        return task.batch([
-          task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
-          task.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[3][0].group_id])
-        ]);
-      })
-      .then(group_data => {
-        //If user is an admin in a group
-        if(user_data[2])
-        {
-          db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
-          .then(admin_data => {
-            res.render("pages/home",{
-            //If all goes right, send to home page with data
-              friendships: user_data[1],
-              user_is_admin: user_data[2],
-              user_is_admin_members: admin_data,
-              user_is_not_admin: group_data[0][0],
-              user_is_not_admin_members: group_data[1]
-            });
-          })
-          .catch(err => {console.log(err);res.redirect('/login');});
-        }
-        else
-        {
-          //Send to home page with data; user is not an admin
-            res.render("pages/home",{
-              friendships: user_data[1],
-              user_is_admin: user_data[2],
-              user_is_not_admin: group_data[0][0],
-              user_is_not_admin_members: group_data[1],
-            });
-        }
-      })
-      .catch(err => {console.log(err);res.redirect('/login');});
-    }
-  })
-  .catch(err => {console.log(err);res.redirect('/login');});
-});
-
-
-/*
-//Find user in users table
-  db.one("SELECT * FROM users WHERE username = $1", [req.session.user.username])
-    .then(data => {
-console.log("Data: ", data);
-//Find all friendships under user
-      db.any("SELECT * FROM friendships WHERE username = $1", [data.username])
-      .then(data2 => {
-console.log("Data2: ", data2);
-        res.render("pages/home", {
-          friendships: data2
-        })
-      })
-      .catch(err =>{
-        console.log(err);
-        res.render('pages/login');
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      res.render('pages/login');
-    });
-});
-*/
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
