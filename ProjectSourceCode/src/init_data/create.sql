@@ -2,7 +2,7 @@
 -- Create the users table
 CREATE TABLE users (
     username VARCHAR(255) PRIMARY KEY,
-    password VARCHAR(255)
+    password VARCHAR(255),
     wallet float
 );
 
@@ -41,8 +41,9 @@ CREATE TABLE transactions_group(
   requester_username VARCHAR(255),
   group_id INT,
   FOREIGN KEY (group_id) REFERENCES groups(id),
-  FOREIGN KEY (requester_username) REFERENCES users(username),
-)
+  FOREIGN KEY (requester_username) REFERENCES users(username)
+);
+
 CREATE TABLE transactions_individual(
   charge_amount FLOAT,
   charge_desc CHAR(50),
@@ -52,5 +53,4 @@ CREATE TABLE transactions_individual(
   group_id INT,
   FOREIGN KEY (sender_username) REFERENCES users(username),
   FOREIGN KEY (recipient_username) REFERENCES users(username)
-)
-Cr
+);
