@@ -70,6 +70,9 @@ app.use(
   })
 );
 
+// We create the user variable up here and populate it after the fact so that we can access it in /manageAccount as well as set it in /login
+let user;
+
 // *****************************************************
 // <!-- Section 4 : API Routes -->
 // *****************************************************
@@ -100,7 +103,8 @@ app.get("/test", (req, res) => {
 
 // Manage Account
 app.get("/manageAccount", (req, res) => {
-  res.render("pages/manageAccount");
+  // TODO: send account object to manage account so it can populate fields
+  res.render("pages/manageAccount", {});
 });
 
 // * GROUP ENDPOINTS * //
@@ -172,7 +176,7 @@ app.get("/login", (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     // Find the user from the users table where the username is the same as the one entered by the user
-    const user = await db.oneOrNone("SELECT * FROM users WHERE username = $1", [
+    user = await db.oneOrNone("SELECT * FROM users WHERE username = $1", [
       req.body.username,
     ]);
 
@@ -181,6 +185,7 @@ app.post("/login", async (req, res) => {
       const match = await bcrypt.compare(req.body.password, user.password);
 
       if (match) {
+        console.log("session: ", session, "user", user);
         // Save the user in the session variable
         req.session.user = user;
         req.session.save();
