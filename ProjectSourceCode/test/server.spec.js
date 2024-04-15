@@ -13,6 +13,9 @@ const { assert, expect } = chai;
 // test/some-test-file.js
 
 // ... write your tests ...
+// test/some-test-file.js
+
+// ... write your tests ...
 
 // ********************** DEFAULT WELCOME TESTCASE ****************************
 
@@ -43,6 +46,7 @@ describe("Testing /register API endpoint", () => {
       .send({ username: "John Doe", password: "password" })
       .end((err, res) => {
         expect(res).to.have.status(200);
+        // expect(res.body.message).to.equals("User created successfully");
         // expect(res.body.message).to.equals("User created successfully");
         done();
       });

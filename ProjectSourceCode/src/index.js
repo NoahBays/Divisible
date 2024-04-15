@@ -12,7 +12,6 @@ const bodyParser = require("body-parser");
 const session = require("express-session"); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
 const bcrypt = require("bcrypt"); //  To hash passwords
 const axios = require("axios"); // To make HTTP requests from our server. We'll learn more about it in Part C.
-const { group } = require("console");
 
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
@@ -80,15 +79,20 @@ app.use(
 // * MISCELLANEOUS ENDPOINTS * //
 
 // Dummy endpoint from lab 11
+// * MISCELLANEOUS ENDPOINTS * //
+
+// Dummy endpoint from lab 11
 app.get("/welcome", (req, res) => {
   res.json({ status: "success", message: "Welcome!" });
 });
 
 // Home
+// Home
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
 
+// Home
 // Home
 // GET
 app.get("/home", (req, res) => {
@@ -97,7 +101,20 @@ app.get("/home", (req, res) => {
 
 app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
+app.get("/home", (req, res) => {
+  res.render("pages/home");
 });
+
+app.get("/test", (req, res) => {
+  res.status(302).redirect("http://127.0.0.1:3000/login");
+});
+
+// Manage Account
+app.get("/manageAccount", (req, res) => {
+  res.render("pages/manageAccount");
+});
+
+// * GROUP ENDPOINTS * //
 
 // Manage Account
 app.get("/manageAccount", (req, res) => {
@@ -116,6 +133,12 @@ app.get("/createGroup", (req, res) => {
 // GET
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
+});
+
+// * REGISTER ENDPOINTS * //
+// GET
+app.get("/register", (req, res) => {
+  res.render("pages/register", {});
 });
 
 // * REGISTER ENDPOINTS * //
@@ -166,7 +189,7 @@ app.post("/register", async (req, res) => {
 
 // GET
 app.get("/login", (req, res) => {
-  res.render("pages/login");
+  res.render("pages/login", {});
 });
 
 // POST
@@ -180,24 +203,20 @@ app.post("/login", async (req, res) => {
     if (user) {
       // Use bcrypt.compare to encrypt the password entered from the user and compare if the entered password is the same as the registered one
       const match = await bcrypt.compare(req.body.password, user.password);
-      console.log("User found");
 
       if (match) {
         // Save the user in the session variable
         req.session.user = user;
         req.session.save();
-        console.log("Password matched successfully");
 
         // Redirect to /discover route after setting the session
         console.log("match");
         res.redirect("/home");
-        console.log("Logged in successfully");
       } else {
         // If the password doesn't match, render the login page and send a message to the user stating "Incorrect username or password"
         res.render("pages/login", {
           message: "Incorrect username or password",
         });
-        console.log("Password match unsuccessful");
       }
     } else {
       console.log("register");
@@ -208,7 +227,89 @@ app.post("/login", async (req, res) => {
     console.error(error);
     // If an error occurs, render the login page and send a generic error message
     res.render("pages/login", { message: "An error occurred" });
-    console.log("An error has occurred");
+  }
+});
+//* Payment window endpoints *// 
+function updateUserWallet(username, amount) {
+  return new Promise((resolve, reject) => {
+    db.beginTransaction(err => {
+      if (err) reject(err);
+      const query = `UPDATE users SET wallet = wallet_balance + ? WHERE username = ?`;
+      db.query(query, [amount, username], (error, results) => {
+        if (error) {
+          return db.rollback(() => reject(error));
+        }
+        db.commit(commitErr => {
+          if (commitErr) {
+            return db.rollback(() => reject(commitErr));
+          }
+          resolve(results);
+        });
+      });
+    });
+  });
+}
+app.post('/update-wallet', async (req, res) => {
+  const { username, amount } = req.body;
+  try {
+    if(amount > 0){
+      await updateUserWallet(username, amount);
+      res.send('Wallet updated successfully!');
+    }
+    else{
+      res.send('Payment Requested!');
+    }
+  } catch (error) {
+    res.status(500).send('Failed to update wallet');
+  }
+});
+
+
+//* Payment functionality * //
+app.post('/payment-individual', async (req, res) => {
+  const { chargeName, amount, senderUsername, recipientUsername, groupId } = req.body;
+  // update wallet
+  await updateUserWallet(senderUsername, -amount);
+  await updateUserWallet(recipientUsername, amount);
+  if(amount<0){
+    chargeName += ' REQUESTED'
+  }
+  // Add a record to the transaction table
+  const query = `
+      INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username, group_id)
+      VALUES (?, ?, CURRENT_DATE, ?, ?, ?)
+  `;
+  await db.query(query, [amount, chargeName, senderUsername, recipientUsername, groupId]);
+  // Redirect the user or send a response
+  res.redirect('pages/home');
+});
+app.post('/payment-group', async (req, res) => {
+  const { chargeName, amount, requesterUsername, groupId } = req.body;
+  try {
+    // Retrieve all members of the group
+    const members = await db.query('SELECT username FROM group_members WHERE group_id = ?', [groupId]);
+    if (members.length > 0) {
+      const splitAmount = amount / members.length; // Equal split
+      // Record the transaction for the requester
+      let transactionQuery = `
+        INSERT INTO transactions_group (charge_amount, charge_desc, date, requester_username, group_id)
+        VALUES (?, ?, CURRENT_DATE, ?, ?)
+      `;
+      await db.query(transactionQuery, [amount, chargeName, requesterUsername, groupId]);
+      // Update each member's wallet
+      // will either request money to each individual or send money to each individual within the group
+      members.forEach(async member => {
+        if (member.username !== requesterUsername) { 
+          await updateUserWallet(member.username, -splitAmount);
+        }
+      });
+      res.redirect('pages/home');
+    } else {
+      res.status(400).send("No members found in the group.");
+    }
+  } catch (error) {
+    console.error('Error processing group payment:', error);
+    res.status(500).send("Failed to process payment.");
   }
 });
 
