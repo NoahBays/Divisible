@@ -157,6 +157,57 @@ app.get('/home', (req, res) => {
     .catch(err => {console.log(err);res.redirect('/login');});
   });
 
+  app.get('/group', function (req, res) {
+    // Fetch query parameters from the request object
+    var current_id = req.query.id;
+    var current_group_admin = req.query.group_admin_username;
+    var current_user = req.session.user.username; //for differing views based on whether current user is group admin or not - currently not implemented
+  
+    // Multiple queries using templated strings
+    var current_id = `select * from groups where id = '${current_id}';`;
+    var current_group_admin = `select * from groups where group_admin_username = '${current_group_admin}';`;
+  
+    // use task to execute multiple queries
+    db.task('get-everything', task => {
+      return task.batch([task.any(current_id), task.any(current_group_admin)]);
+    })
+      // if query execution succeeds
+      // query results can be obtained
+      // as shown below
+      .then(data => {
+
+        db.task('Find all group members of given group', function (task){
+          return task.any("SELECT * from group__members where group_id = $1", [current_id]);
+        })
+        .then(group_data => {
+          //Checks for valid data for group_id and group_admin_username
+          if(data[0] && data[1])
+          {
+            res.render("pages/group",{
+              current_id: data[0],
+              current_group_admin: data[1],
+              group_members_data: group_data,
+            });
+          }
+          else{
+            res.render("pages/login") //would like to return home upon unsuccessful attetmpt, not implemented yet
+          }
+
+        })
+      })
+      // if query execution fails
+      // send error message
+      /*.catch(err => {
+        console.log('Uh Oh spaghettio');
+        console.log(err);
+        res.status('400').json({
+          current_id: '',
+          current_group_admin: '',
+          error: err,
+        });
+      });*/
+  });
+
 app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
 });
