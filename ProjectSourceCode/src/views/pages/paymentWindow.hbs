@@ -1,37 +1,64 @@
-
-
-<div class = "container">
-    <div class = "name">
-        <div>
-            <label>Name of Charge</label>
-        </div>
-        <div>
-            <input type = "text"/>
-        </div>
-    </div>
-    <div class = "amount">
-        <div>
-            <label>Amount</label>
-        </div>
-        <div>
-            <input type = "number"/>
-        </div>
-    </div>
-    <div class = "paymentSelection">
-        <div class = "row">
-            <div class = "cancel">
-                <a href = "home.hbs">Cancel</a>
-            </div>
-            <div class = "pay">
-                <button type = 'submit'>Submit</button>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-center vh-100">
+  <div class="col-lg-4">
+    <form action="/payment-individual" method="POST" class="form-payment">
+      {{> message }}
+      <h1>Name of Charge</h1>
+      <input type="text">
+      <label for="username">Choose Friend:</label>
+      <input
+        type="username"
+        id="username"
+        name="username"
+        class="form-control mb-3"
+        placeholder="Username"
+        required
+        autofocus
+      />
+      <label for="amount" class="sr-only">Amount:</label>
+      <input
+        type="number"
+        id="number"
+        name="number"
+        class="form-control mb-3"
+        placeholder="Money"
+        required
+      />
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Pay/request</button>
+      <p class="mt-3 text-center">
+        Can't find you friend? <a href="pages/addFriends">Add friend</a>
+      </p>
+    </form>
+  </div>
 </div>
-
-
-
-
-
-
-
+<div class="d-flex justify-content-center vh-100">
+  <div class="col-lg-4">
+    <form action="/payment-group" method="POST" class="form-payment">
+      {{> message }}
+      <h1>Name of Charge</h1>
+      <input type="text">
+      <label for="groupname">Choose Group:</label>
+      <input
+        type="groupname"
+        id="groupname"
+        name="groupname"
+        class="form-control mb-3"
+        placeholder="groupname"
+        required
+        autofocus
+      />
+      <label for="amount" class="sr-only">Amount:</label>
+      <input
+        type="number"
+        id="number"
+        name="number"
+        class="form-control mb-3"
+        placeholder="Money"
+        required
+      />
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Pay/request</button>
+      <p class="mt-3 text-center">
+        Don't have a group? <a href="pages/createGroup">Add group</a>
+      </p>
+    </form>
+  </div>
+</div>

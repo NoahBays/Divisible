@@ -47,6 +47,7 @@ describe("Testing /register API endpoint", () => {
       .end((err, res) => {
         expect(res).to.have.status(200);
         // expect(res.body.message).to.equals("User created successfully");
+        // expect(res.body.message).to.equals("User created successfully");
         done();
       });
   });
@@ -131,3 +132,4 @@ describe("Testing Render", () => {
 //       });
 //   });
 // });
+
