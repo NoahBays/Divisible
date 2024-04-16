@@ -18,7 +18,7 @@ CREATE TABLE friendships (
 
 -- Create the groups table
 CREATE TABLE groups (
-    id SERIAL PRIMARY KEY,
+    id INT PRIMARY KEY,
     group_admin_username VARCHAR(255),
     group_name VARCHAR(255),
     FOREIGN KEY (group_admin_username) REFERENCES users(username)
