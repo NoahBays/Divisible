@@ -1,75 +1,85 @@
 <div class="container">
-    <div class="col-4">
-        <h1>Home</h1>
+    <div class="row align-items-center">
+        <div class="col-7">
+            <h3>Welcome {{user.username}}, your current balance is: ${{user.wallet}}</h3>
+        </div>
+        <div class="col-5 text-center">
+            <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Notifications</button>
+                <ul class="dropdown-menu">
+                    {{#each notifications}}
+                        <li><a class="dropdown-item">{{this.message}}</a></li>
+                    {{/each}}
+                </ul>
+            <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Settings</button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="../ManageAccount">Manage Account</a></li>
+                <li><a class="dropdown-item" href="../logout">Logout</a></li>
+            </ul>
+        </div>
     </div>
-    <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Notifications</button>
-    <ul class="dropdown-menu">
-        {{#each notifications}}
-    <li><a class="dropdown-item">{{this.message}}</a></li>
-        {{/each}}
-  </ul>
-    <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Settings</button>
-    <ul class="dropdown-menu">
-    <li><a class="dropdown-item" href="../ManageAccount">Manage Account</a></li>
-    <li><a class="dropdown-item" href="../logout">Logout</a></li>
-  </ul>
-</div>
-
-<div class="container">
-    <button type="submit" class="btn btn-primary" style="margin: 1em" onclick="location.href = ('../addFriends')">Add Friend</button>
-    <button type="submit" class="btn btn-primary" style="margin: 1em" onclick="location.href = ('../createGroup')">Add Group</button>
 </div>
 
 <!--Groups-->
 <div class="container">
     <div class="row">
-        <h2 style="text-decoration:underline">Groups list</h2>        
-        <table class="table" style="text-align:center">
-            <tbody>
+        <div class="row align-items-center">
+            <h2 style="text-decoration:underline">Groups list</h2>   
+            <button type="submit" class="btn btn-primary" style="margin: 1em" onclick="location.href = ('../createGroup')">Add Group</button>
+        </div>
+        {{#if admin}}
+            <table class="table" style="text-align:center">
+                <tbody>
 <!--If user is admin in a group -->
-            {{#if admin}}
-            <tr>
-                <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{admin.group_name}}</a></th>
-            </tr>
-            <tr>
-                <th>{{admin.group_admin_username}}</th>
-                {{#each admin_members}}
-                    <td>{{this.username}}</td>
-                {{/each}}
-            </tr>
-            {{/if}}
-            </tbody>
-        </table>
-        <table class="table" style="text-align:center">
-            <tbody>    
-<!--If user is a member in a group-->
-            {{#if not_admin}}
-            <tr>
-                <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{not_admin.group_name}}</a></th>
-            </tr>
-            <tr>
-                <th>{{not_admin.group_admin_username}}</th>
-                {{#each not_admin_members}}
-                    <td>{{this.username}}</td>
-                {{/each}}
-            </tr>
-            {{/if}}
-            </tbody>
-        </table>
+                <tr>
+                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{admin.group_name}}</a></th>
+                </tr>
+                <tr>
+                    <th>{{admin.group_admin_username}}</th>
+                    {{#each admin_members}}
+                        <td>{{this.username}}</td>
+                    {{/each}}
+                </tr>
+                </tbody>
+            </table>
+        {{/if}}
+        {{#if not_admin}}
+            <table class="table" style="text-align:center">
+                <tbody>    
+    <!--If user is a member in a group-->
+                <tr>
+                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold" >{{not_admin.group_name}}</a></th>
+                </tr>
+                <tr>
+                    <th>{{not_admin.group_admin_username}}</th>
+                    {{#each not_admin_members}}
+                        <td>{{this.username}}</td>
+                    {{/each}}
+                </tr>
+                </tbody>
+            </table>
+        {{/if}}
     </div>
 </div>
 
 <!--Friends-->
 <div class="container">
     <div class="row">
-        <h2 style="text-decoration:underline">Friends list</h2>        
+        <div class="row align-items-center">
+            <h2 style="text-decoration:underline">Friends list</h2>        
+            <button type="submit" class="btn btn-primary" style="margin: 1em" onclick="location.href = ('../addFriends')">Add Friend</button>
+        </div>
         <table class="table">
             <tbody>
             {{#each friendships}}
                 <tr>
                     <td>
-                    <!--<img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">-->
-                    <a class="btn" onclick="location.href='../ExampleFriend'">{{this.friend_username}}</a>
+                        <!--<img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">-->
+                        <a class="btn" onclick="location.href='../ExampleFriend'">{{this.friend_username}}</a>
+                    </td>
+                    <td>
+                        {{#if this.outstanding_balance}}
+                            <h5>Outstanding balance: ${{this.outstanding_balance}}</h5>
+                        {{/if}}
                     </td>
                 </tr>
             {{/each}}

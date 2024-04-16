@@ -70,6 +70,9 @@ app.use(
   })
 );
 
+// We create the user variable up here and populate it after the fact so that we can access it in /manageAccount as well as set it in /login
+let user;
+
 // *****************************************************
 // <!-- Section 4 : API Routes -->
 // *****************************************************
@@ -102,7 +105,7 @@ app.get('/home', (req, res) => {
       task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
       task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
       task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
-      task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username])
+      task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username]),
     ]);
   })
     .then(user_data => {
@@ -131,6 +134,7 @@ app.get('/home', (req, res) => {
             .then(admin_data => {
               res.render("pages/home",{
               //If all goes right, send to home page with data
+                user: user_data[0],
                 friendships: user_data[1],
                 admin: user_data[2],
                 admin_members: admin_data,
@@ -144,6 +148,7 @@ app.get('/home', (req, res) => {
           {
             //Send to home page with data; user is not an admin
               res.render("pages/home",{
+                user: user_data[0],
                 friendships: user_data[1],
                 admin: user_data[2],
                 not_admin: group_data[0][0],
@@ -159,6 +164,7 @@ app.get('/home', (req, res) => {
 
 app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
+});
 app.get("/home", (req, res) => {
   res.render("pages/home");
 });
@@ -176,7 +182,7 @@ app.get("/manageAccount", (req, res) => {
 
 // Manage Account
 app.get("/manageAccount", (req, res) => {
-  res.render("pages/manageAccount");
+  res.render("pages/manageAccount", { user: user });
 });
 
 // * GROUP ENDPOINTS * //
@@ -218,7 +224,7 @@ app.get("/searchFriends", async (req, res) => {
     SELECT users.*
     FROM users
     INNER JOIN friendships ON users.username = friendships.friend_username
-    WHERE friendships.username = $1 AND users.username LIKE $2
+    WHERE friendships.user_username = null AND users.username LIKE '%Lucca%'
   `;
 
   const friends = await db.any(query, [username, '%' + searchQuery + '%']);
@@ -238,29 +244,32 @@ app.post("/addUserToGroup", (req, res) => {
 });
 
 app.post("/addGroupMembers", async (req, res) => {
-  const { groupName, usernames } = req.body;
+  const { groupName, groupMembers } = req.body;
+
   db.one('SELECT id FROM groups WHERE group_name = $1', [groupName])
-  .then(data => {
+  .then(async data => {
     console.log(data.id); // this will log the group id
+    let groupId = data.id;
+
+    try {
+      // Start a database transaction
+      await db.tx(async t => {
+        // For each username in the array, insert a new row in the group_members table
+        for (const username of groupMembers) {
+          await t.none("INSERT INTO group_members (group_id, username) VALUES ($1, $2)", [groupId, username]);
+        }
+      });
+
+      res.json({ status: 200, message: "Group members added successfully" });
+    } catch (error) {
+      console.error(error);
+      res.json({ status: 400, message: "Failed to add group members" });
+    }
   })
   .catch(error => {
     console.error(error);
-  });
-
-  try {
-    // Start a database transaction
-    await db.tx(async t => {
-      // For each username in the array, insert a new row in the group_members table
-      for (const username of usernames) {
-        await t.none("INSERT INTO group_members (group_id, username) VALUES ($1, $2)", [data.id, username]);
-      }
-    });
-
-    res.json({ status: 200, message: "Group members added successfully" });
-  } catch (error) {
-    console.error(error);
     res.json({ status: 400, message: "Failed to add group members" });
-  }
+  });
 });
 
 
@@ -331,7 +340,7 @@ app.get("/login", (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     // Find the user from the users table where the username is the same as the one entered by the user
-    const user = await db.oneOrNone("SELECT * FROM users WHERE username = $1", [
+    user = await db.oneOrNone("SELECT * FROM users WHERE username = $1", [
       req.body.username,
     ]);
 
@@ -340,6 +349,7 @@ app.post("/login", async (req, res) => {
       const match = await bcrypt.compare(req.body.password, user.password);
 
       if (match) {
+        console.log("session: ", session, "user", user);
         // Save the user in the session variable
         req.session.user = user;
         req.session.save();
@@ -364,17 +374,17 @@ app.post("/login", async (req, res) => {
     res.render("pages/login", { message: "An error occurred" });
   }
 });
-//* Payment window endpoints *// 
+//* Payment window endpoints *//
 function updateUserWallet(username, amount) {
   return new Promise((resolve, reject) => {
-    db.beginTransaction(err => {
+    db.beginTransaction((err) => {
       if (err) reject(err);
       const query = `UPDATE users SET wallet = wallet_balance + ? WHERE username = ?`;
       db.query(query, [amount, username], (error, results) => {
         if (error) {
           return db.rollback(() => reject(error));
         }
-        db.commit(commitErr => {
+        db.commit((commitErr) => {
           if (commitErr) {
             return db.rollback(() => reject(commitErr));
           }
@@ -384,45 +394,53 @@ function updateUserWallet(username, amount) {
     });
   });
 }
-app.post('/update-wallet', async (req, res) => {
+app.post("/update-wallet", async (req, res) => {
   const { username, amount } = req.body;
   try {
-    if(amount > 0){
+    if (amount > 0) {
       await updateUserWallet(username, amount);
-      res.send('Wallet updated successfully!');
-    }
-    else{
-      res.send('Payment Requested!');
+      res.send("Wallet updated successfully!");
+    } else {
+      res.send("Payment Requested!");
     }
   } catch (error) {
-    res.status(500).send('Failed to update wallet');
+    res.status(500).send("Failed to update wallet");
   }
 });
 
-
 //* Payment functionality * //
-app.post('/payment-individual', async (req, res) => {
-  const { chargeName, amount, senderUsername, recipientUsername, groupId } = req.body;
+app.post("/payment-individual", async (req, res) => {
+  const { chargeName, amount, senderUsername, recipientUsername, groupId } =
+    req.body;
   // update wallet
   await updateUserWallet(senderUsername, -amount);
   await updateUserWallet(recipientUsername, amount);
-  if(amount<0){
-    chargeName += ' REQUESTED'
+  if (amount < 0) {
+    chargeName += " REQUESTED";
   }
   // Add a record to the transaction table
   const query = `
       INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username, group_id)
       VALUES (?, ?, CURRENT_DATE, ?, ?, ?)
   `;
-  await db.query(query, [amount, chargeName, senderUsername, recipientUsername, groupId]);
+  await db.query(query, [
+    amount,
+    chargeName,
+    senderUsername,
+    recipientUsername,
+    groupId,
+  ]);
   // Redirect the user or send a response
-  res.redirect('pages/home');
+  res.redirect("pages/home");
 });
-app.post('/payment-group', async (req, res) => {
+app.post("/payment-group", async (req, res) => {
   const { chargeName, amount, requesterUsername, groupId } = req.body;
   try {
     // Retrieve all members of the group
-    const members = await db.query('SELECT username FROM group_members WHERE group_id = ?', [groupId]);
+    const members = await db.query(
+      "SELECT username FROM group_members WHERE group_id = ?",
+      [groupId]
+    );
     if (members.length > 0) {
       const splitAmount = amount / members.length; // Equal split
       // Record the transaction for the requester
@@ -430,20 +448,25 @@ app.post('/payment-group', async (req, res) => {
         INSERT INTO transactions_group (charge_amount, charge_desc, date, requester_username, group_id)
         VALUES (?, ?, CURRENT_DATE, ?, ?)
       `;
-      await db.query(transactionQuery, [amount, chargeName, requesterUsername, groupId]);
+      await db.query(transactionQuery, [
+        amount,
+        chargeName,
+        requesterUsername,
+        groupId,
+      ]);
       // Update each member's wallet
       // will either request money to each individual or send money to each individual within the group
-      members.forEach(async member => {
-        if (member.username !== requesterUsername) { 
+      members.forEach(async (member) => {
+        if (member.username !== requesterUsername) {
           await updateUserWallet(member.username, -splitAmount);
         }
       });
-      res.redirect('pages/home');
+      res.redirect("pages/home");
     } else {
       res.status(400).send("No members found in the group.");
     }
   } catch (error) {
-    console.error('Error processing group payment:', error);
+    console.error("Error processing group payment:", error);
     res.status(500).send("Failed to process payment.");
   }
 });
