@@ -35,20 +35,20 @@ VALUES
 ('Logan', 'Lucca', 499.20),
 ('Lucca', 'Logan', -499.20);
 
--- INSERT INTO groups
--- (id, group_admin_username, group_name)
--- VALUES
--- (1, 'Noah', 'WW'),
--- (2, 'Ben', 'Elephant');
+INSERT INTO groups
+(id, group_admin_username, group_name)
+VALUES
+(1, 'Noah', 'WW'),
+(2, 'Ben', 'Elephant');
 
--- INSERT INTO group_members
--- (group_id, username)
--- VALUES
--- (1, 'Ben'),
--- (1, 'Jace'),
--- (1, 'Lucca'),
--- (1, 'Owen'),
--- (1, 'Logan'),
--- (2, 'Lucca'),
--- (2, 'Jace'),
--- (2, 'Noah');
+INSERT INTO group_members
+(group_id, username)
+VALUES
+(1, 'Ben'),
+(1, 'Jace'),
+(1, 'Lucca'),
+(1, 'Owen'),
+(1, 'Logan'),
+(2, 'Lucca'),
+(2, 'Jace'),
+(2, 'Noah');

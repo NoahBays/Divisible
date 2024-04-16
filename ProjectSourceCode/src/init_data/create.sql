@@ -44,6 +44,7 @@ CREATE TABLE transactions_group(
   FOREIGN KEY (group_id) REFERENCES groups(id),
   FOREIGN KEY (requester_username) REFERENCES users(username)
 );
+
 CREATE TABLE transactions_individual(
   charge_amount FLOAT,
   charge_desc CHAR(50),
