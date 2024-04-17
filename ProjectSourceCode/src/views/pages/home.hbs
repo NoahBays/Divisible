@@ -1,3 +1,4 @@
+
 <div class="container">
     <div class="row align-items-center">
         <div class="col-7">
@@ -13,6 +14,7 @@
             <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Settings</button>
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="../ManageAccount">Manage Account</a></li>
+                <li><a class="dropdown-item" href="../transactionHistory">Transaction History</a></li>
                 <li><a class="dropdown-item" href="../logout">Logout</a></li>
             </ul>
         </div>
@@ -30,15 +32,20 @@
             <table class="table" style="text-align:center">
                 <tbody>
 <!--If user is admin in a group -->
-                <tr>
-                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{admin.group_name}}</a></th>
-                </tr>
-                <tr>
-                    <th>{{admin.group_admin_username}}</th>
-                    {{#each admin_members}}
-                        <td>{{this.username}}</td>
-                    {{/each}}
-                </tr>
+                    <tr>
+                        <form>
+                            <th><button type="submit" name="Crocodile" value="Tiger" class="btn" onclick="location.href='../group'" style="font-weight:bold">{{admin.group_name}}</button></th>
+                            
+                            <th><a type="button submit" name="Crocodile" value="Tiger" id='link' class="btn" onclick="location.href='../group'" style="font-weight:bold">{{admin.group_name}}</a></th>
+                            <button type="submit" value="Monkey" name="Viper"></button>
+                        </form>
+                    </tr>
+                    <tr>
+                        <th>{{admin.group_admin_username}}</th>
+                        {{#each admin_members}}
+                            <td>{{this.username}}</td>
+                        {{/each}}
+                    </tr>
                 </tbody>
             </table>
         {{/if}}
@@ -47,7 +54,7 @@
                 <tbody>    
     <!--If user is a member in a group-->
                 <tr>
-                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold" >{{not_admin.group_name}}</a></th>
+                    <th><a id='link' class="btn" onclick="location.href='../group'" style="font-weight:bold">{{not_admin.group_name}}</a></th>
                 </tr>
                 <tr>
                     <th>{{not_admin.group_admin_username}}</th>
@@ -87,3 +94,8 @@
         </table>
     </div>
 </div>
+
+<form action="" method="">
+      <a id='link' href="">
+      <textarea id="txt" rows="3" columns="8" name="val" onChange="updateLink()">abcdefg<textarea>
+</form>

@@ -109,6 +109,7 @@ app.get('/home', (req, res) => {
   if(!user_data[2] && !user_data[3][0])
       {
         res.render("pages/home",{
+          user: user_data[0],
           friendships: user_data[1]
         });
       }
@@ -161,6 +162,10 @@ app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
 });
 
+app.get("/group", (req, res) => {
+  res.render("pages/group");
+});
+
 // Manage Account
 app.get("/manageAccount", (req, res) => {
   res.render("pages/manageAccount", { user: user });
@@ -211,11 +216,13 @@ app.post("/register", async (req, res) => {
 
   // Password Hashing
   const hash = await bcrypt.hash(req.body.password, 10);
+  var money = 0;
 
   // Create a new user
-  await db.none("INSERT INTO users (username, password) VALUES ($1, $2)", [
+  await db.none("INSERT INTO users (username, password, wallet) VALUES ($1, $2, $3)", [
     req.body.username,
     hash,
+    money
   ]);
 
   // Send a success response
