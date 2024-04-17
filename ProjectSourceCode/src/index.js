@@ -13,6 +13,10 @@ const session = require("express-session"); // To set the session object. To sto
 const bcrypt = require("bcrypt"); //  To hash passwords
 const axios = require("axios"); // To make HTTP requests from our server. We'll learn more about it in Part C.
 
+Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
+  return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+});
+
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
 // *****************************************************
@@ -90,74 +94,78 @@ app.get("/welcome", (req, res) => {
 });
 
 // Home
-// Home
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
 
-// Home
 // Home
 // GET
 app.get('/home', (req, res) => {
   //Find user, friendships, if user is an admin in any groups, members user is a part of
   db.task('Find user, friends, admins, and group members', function(task){
     return task.batch([
-      task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
+      task.one("SELECT username, wallet FROM users WHERE username = $1", [req.session.user.username]), 
       task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
-      task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
+      task.any("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
       task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username]),
     ]);
   })
-    .then(user_data => {
-
-  //Checks for null values for admin status and group member status
-  if(!user_data[2] && !user_data[3][0])
+  .then(user_data => {
+    const admin_members_arr = [];
+    const not_admin_members_arr = [];
+    const not_admin_arr = [];
+    for(let i = 0; i < user_data[2].length; i++)
+    {
+      if(user_data[2])
       {
-        res.render("pages/home",{
-          friendships: user_data[1]
-        });
-      }
-      else
-      {
-        //Find groups where user is not admin and find the admin of that group
-        db.task('Find group members when user is admin and when user is not admin', function(task){
-          return task.batch([
-            task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
-            task.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][0].group_id])
-          ]);
-        })
-        .then(group_data => {
-          //If user is an admin in a group
-          if(user_data[2])
+        db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[2][i].id])
+        .then(admin_members_data => {
+          for(let j = 0; j < admin_members_data.length; j++)
           {
-            db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
-            .then(admin_data => {
-              res.render("pages/home",{
-              //If all goes right, send to home page with data
-                user: user_data[0],
-                friendships: user_data[1],
-                admin: user_data[2],
-                admin_members: admin_data,
-                not_admin: group_data[0][0],
-                not_admin_members: group_data[1]
-              });
-            })
-            .catch(err => {console.log(err);res.redirect('/login');});
-          }
-          else
-          {
-            //Send to home page with data; user is not an admin
-              res.render("pages/home",{
-                user: user_data[0],
-                friendships: user_data[1],
-                admin: user_data[2],
-                not_admin: group_data[0][0],
-                not_admin_members: group_data[1],
-              });
+            admin_members_arr.push(admin_members_data[j]);
           }
         })
         .catch(err => {console.log(err);res.redirect('/login');});
       }
+    }
+    for(let i = 0; i < user_data[3].length; i++)
+    {
+      if(user_data[3])
+      {
+        db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][i].group_id])
+        .then(not_admin_members_data => {
+          for(let j = 0; j < not_admin_members_data.length; j++)
+          {
+            not_admin_members_arr.push(not_admin_members_data[j]);
+            // console.log("not_admin_members_arr = ", not_admin_members_arr);
+          }
+        })
+        .catch(err => {console.log(err);res.redirect('/login');});
+      }
+    }
+    for(let i = 0; i < user_data[3].length; i++)
+    {
+      if(user_data[3])
+      {
+        db.any("SELECT * FROM groups WHERE id = $1", [user_data[3][i].group_id])
+        .then(not_admin_data => {
+          for(let j = 0; j < not_admin_data.length; j++)
+          {
+            not_admin_arr.push(not_admin_data[j]);
+            // console.log("not_admin_arr = ", not_admin_arr);
+          }
+        })
+        .catch(err => {console.log(err);res.redirect('/login');});
+      }
+    }
+    res.render("pages/home",{
+      user: user_data[0],
+      friendships: user_data[1],
+      admin: user_data[2],
+      admin_members: admin_members_arr,
+      not_admin: not_admin_arr,
+      not_admin_members: not_admin_members_arr
+    });
     })
     .catch(err => {console.log(err);res.redirect('/login');});
   });

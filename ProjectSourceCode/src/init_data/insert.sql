@@ -39,7 +39,9 @@ INSERT INTO groups
 (id, group_admin_username, group_name)
 VALUES
 (1, 'Noah', 'WW'),
-(2, 'Ben', 'Elephant');
+(2, 'Ben', 'Elephant'),
+(3, 'Noah', 'Laufey Fan Club'),
+(4, 'Jace', 'Blood brothers');
 
 INSERT INTO group_members
 (group_id, username)
@@ -51,7 +53,11 @@ VALUES
 (1, 'Logan'),
 (2, 'Lucca'),
 (2, 'Jace'),
-(2, 'Noah');
+(2, 'Noah'),
+(3, 'Logan'),
+(3, 'Lucca'),
+(4, 'Noah'),
+(4, 'Ben');
 -- INSERT INTO friendships
 -- (user_username, friend_username)
 -- VALUES

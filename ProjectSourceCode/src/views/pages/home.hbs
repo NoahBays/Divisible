@@ -1,9 +1,9 @@
 <div class="container">
     <div class="row align-items-center">
-        <div class="col-7">
+        <div class="col-8">
             <h3>Welcome {{user.username}}, your current balance is: ${{user.wallet}}</h3>
         </div>
-        <div class="col-5 text-center">
+        <div class="col-4 text-center">
             <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Notifications</button>
                 <ul class="dropdown-menu">
                     {{#each notifications}}
@@ -26,38 +26,42 @@
             <h2 style="text-decoration:underline">Groups list</h2>   
             <button type="submit" class="btn btn-primary" style="margin: 1em" onclick="location.href = ('../createGroup')">Add Group</button>
         </div>
-        {{#if admin}}
+        {{#each admin}}
             <table class="table" style="text-align:center">
                 <tbody>
 <!--If user is admin in a group -->
                 <tr>
-                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{admin.group_name}}</a></th>
+                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{this.group_name}}</a></th>
                 </tr>
                 <tr>
-                    <th>{{admin.group_admin_username}}</th>
-                    {{#each admin_members}}
-                        <td>{{this.username}}</td>
+                    <th>{{this.group_admin_username}}</th>
+                    {{#each ../admin_members}}
+                        {{#ifEquals this.group_id ../this.id}}
+                            <td>{{this.username}}</td>
+                        {{/ifEquals}}
                     {{/each}}
                 </tr>
                 </tbody>
             </table>
-        {{/if}}
-        {{#if not_admin}}
+        {{/each}}
+        {{#each not_admin}}
             <table class="table" style="text-align:center">
                 <tbody>    
     <!--If user is a member in a group-->
                 <tr>
-                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold" >{{not_admin.group_name}}</a></th>
+                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold" >{{this.group_name}}</a></th>
                 </tr>
                 <tr>
-                    <th>{{not_admin.group_admin_username}}</th>
-                    {{#each not_admin_members}}
-                        <td>{{this.username}}</td>
+                    <th>{{this.group_admin_username}}</th>
+                    {{#each ../not_admin_members}}
+                        {{#ifEquals this.group_id ../this.id}}
+                            <td>{{this.username}}</td>
+                        {{/ifEquals}}
                     {{/each}}
                 </tr>
                 </tbody>
             </table>
-        {{/if}}
+        {{/each}}
     </div>
 </div>
 
@@ -87,3 +91,6 @@
         </table>
     </div>
 </div>
+<script>
+console.log("Home page finished render");
+</script>
