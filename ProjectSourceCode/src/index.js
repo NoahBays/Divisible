@@ -22,6 +22,7 @@ const hbs = handlebars.create({
   extname: "hbs",
   layoutsDir: __dirname + "/views/layouts",
   partialsDir: __dirname + "/views/partials",
+  imageDir: __dirname + "/public/images",
 });
 
 // database configuration
