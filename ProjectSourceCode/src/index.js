@@ -83,127 +83,141 @@ let user;
 // * MISCELLANEOUS ENDPOINTS * //
 
 // Dummy endpoint from lab 11
-// * MISCELLANEOUS ENDPOINTS * //
-
-// Dummy endpoint from lab 11
 app.get("/welcome", (req, res) => {
   res.json({ status: "success", message: "Welcome!" });
 });
 
-// Home
-// Home
+// Dummy endpoint from lab 11
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
 
 // Home
-// Home
 // GET
-app.get('/home', (req, res) => {
+app.get("/home", (req, res) => {
   //Find user, friendships, if user is an admin in any groups, members user is a part of
-  db.task('Find user, friends, admins, and group members', function(task){
+  db.task("Find user, friends, admins, and group members", function (task) {
     return task.batch([
-      task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
-      task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
-      task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
-      task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username]),
+      task.one("SELECT * FROM users WHERE username = $1", [
+        req.session.user.username,
+      ]),
+      task.any(
+        "SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username",
+        [req.session.user.username]
+      ),
+      task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1", [
+        req.session.user.username,
+      ]),
+      task.any(
+        "SELECT * FROM group_members WHERE username = $1 ORDER BY username",
+        [req.session.user.username]
+      ),
     ]);
   })
-    .then(user_data => {
-
-  //Checks for null values for admin status and group member status
-  if(!user_data[2] && !user_data[3][0])
-      {
-        res.render("pages/home",{
-          friendships: user_data[1]
+    .then((user_data) => {
+      //Checks for null values for admin status and group member status
+      if (!user_data[2] && !user_data[3][0]) {
+        res.render("pages/home", {
+          friendships: user_data[1],
         });
-      }
-      else
-      {
+      } else {
         //Find groups where user is not admin and find the admin of that group
-        db.task('Find group members when user is admin and when user is not admin', function(task){
-          return task.batch([
-            task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
-            task.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][0].group_id])
-          ]);
-        })
-        .then(group_data => {
-          //If user is an admin in a group
-          if(user_data[2])
-          {
-            db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
-            .then(admin_data => {
-              res.render("pages/home",{
-              //If all goes right, send to home page with data
-                user: user_data[0],
-                friendships: user_data[1],
-                admin: user_data[2],
-                admin_members: admin_data,
-                not_admin: group_data[0][0],
-                not_admin_members: group_data[1]
-              });
-            })
-            .catch(err => {console.log(err);res.redirect('/login');});
+        db.task(
+          "Find group members when user is admin and when user is not admin",
+          function (task) {
+            return task.batch([
+              task.any("SELECT * FROM groups WHERE id = $1", [
+                user_data[3][0].group_id,
+              ]),
+              task.any(
+                "SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id",
+                [user_data[3][0].group_id]
+              ),
+            ]);
           }
-          else
-          {
-            //Send to home page with data; user is not an admin
-              res.render("pages/home",{
+        )
+          .then((group_data) => {
+            //If user is an admin in a group
+            if (user_data[2]) {
+              db.any("SELECT * FROM group_members WHERE group_id = $1", [
+                user_data[2].id,
+              ])
+                .then((admin_data) => {
+                  res.render("pages/home", {
+                    //If all goes right, send to home page with data
+                    user: user_data[0],
+                    friendships: user_data[1],
+                    admin: user_data[2],
+                    admin_members: admin_data,
+                    not_admin: group_data[0][0],
+                    not_admin_members: group_data[1],
+                  });
+                })
+                .catch((err) => {
+                  console.log(err);
+                  res.redirect("/login");
+                });
+            } else {
+              //Send to home page with data; user is not an admin
+              res.render("pages/home", {
                 user: user_data[0],
                 friendships: user_data[1],
                 admin: user_data[2],
                 not_admin: group_data[0][0],
                 not_admin_members: group_data[1],
               });
-          }
-        })
-        .catch(err => {console.log(err);res.redirect('/login');});
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            res.redirect("/login");
+          });
       }
     })
-    .catch(err => {console.log(err);res.redirect('/login');});
-  });
+    .catch((err) => {
+      console.log(err);
+      res.redirect("/login");
+    });
+});
 
-  app.get('/group', function (req, res) {
-    // Fetch query parameters from the request object
-    var current_id = req.query.id;
-    var current_group_admin = req.query.group_admin_username;
-    var current_user = req.session.user.username; //for differing views based on whether current user is group admin or not - currently not implemented
-  
-    // Multiple queries using templated strings
-    var current_id = `select * from groups where id = '${current_id}';`;
-    var current_group_admin = `select * from groups where group_admin_username = '${current_group_admin}';`;
-  
-    // use task to execute multiple queries
-    db.task('get-everything', task => {
-      return task.batch([task.any(current_id), task.any(current_group_admin)]);
-    })
-      // if query execution succeeds
-      // query results can be obtained
-      // as shown below
-      .then(data => {
+app.get("/group", function (req, res) {
+  // Fetch query parameters from the request object
+  var current_id = req.query.id;
+  var current_group_admin = req.query.group_admin_username;
+  var current_user = req.session.user.username; //for differing views based on whether current user is group admin or not - currently not implemented
 
-        db.task('Find all group members of given group', function (task){
-          return task.any("SELECT * from group__members where group_id = $1", [current_id]);
-        })
-        .then(group_data => {
-          //Checks for valid data for group_id and group_admin_username
-          if(data[0] && data[1])
-          {
-            res.render("pages/group",{
-              current_id: data[0],
-              current_group_admin: data[1],
-              group_members_data: group_data,
-            });
-          }
-          else{
-            res.render("pages/login") //would like to return home upon unsuccessful attetmpt, not implemented yet
-          }
+  // Multiple queries using templated strings
+  var current_id = `select * from groups where id = '${current_id}';`;
+  var current_group_admin = `select * from groups where group_admin_username = '${current_group_admin}';`;
 
-        })
-      })
-      // if query execution fails
-      // send error message
-      /*.catch(err => {
+  // use task to execute multiple queries
+  db.task("get-everything", (task) => {
+    return task.batch([task.any(current_id), task.any(current_group_admin)]);
+  })
+    // if query execution succeeds
+    // query results can be obtained
+    // as shown below
+    .then((data) => {
+      db.task("Find all group members of given group", function (task) {
+        return task.any("SELECT * from group__members where group_id = $1", [
+          current_id,
+        ]);
+      }).then((group_data) => {
+        //Checks for valid data for group_id and group_admin_username
+        if (data[0] && data[1]) {
+          res.render("pages/group", {
+            current_id: data[0],
+            current_group_admin: data[1],
+            group_members_data: group_data,
+          });
+        } else {
+          res.render("pages/login"); //would like to return home upon unsuccessful attetmpt, not implemented yet
+        }
+      });
+    });
+  // if query execution fails
+  // send error message
+  /*.catch(err => {
         console.log('Uh Oh spaghettio');
         console.log(err);
         res.status('400').json({
@@ -212,7 +226,7 @@ app.get('/home', (req, res) => {
           error: err,
         });
       });*/
-  });
+});
 
 app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
@@ -227,13 +241,6 @@ app.get("/test", (req, res) => {
 
 // Manage Account
 app.get("/manageAccount", (req, res) => {
-  res.render("pages/manageAccount");
-});
-
-// * GROUP ENDPOINTS * //
-
-// Manage Account
-app.get("/manageAccount", (req, res) => {
   res.render("pages/manageAccount", { user: user });
 });
 
@@ -242,7 +249,7 @@ app.get("/manageAccount", (req, res) => {
 // createGroup
 // GET
 app.get("/createGroup", (req, res) => {
-  res.render("pages/createGroup", {username: req.session.username });
+  res.render("pages/createGroup", { username: req.session.username });
 });
 
 // createGroup
@@ -255,11 +262,12 @@ app.post("/createGroup", async (req, res) => {
     const maxIdResult = await db.one("SELECT MAX(id) FROM groups;");
     if (maxIdResult.max == null) {
       maxIdResult.max = 0;
-    };
+    }
     const newId = maxIdResult.max + 1;
 
     // Insert the new group into the 'groups' table
-    const query = "INSERT INTO groups (id, group_admin_username, group_name) VALUES ($1, $2, $3);";
+    const query =
+      "INSERT INTO groups (id, group_admin_username, group_name) VALUES ($1, $2, $3);";
     await db.none(query, [newId, group_admin, group_name]);
 
     res.json({ status: 200, message: "Group created successfully" });
@@ -269,11 +277,9 @@ app.post("/createGroup", async (req, res) => {
   }
 });
 
-
-
 app.get("/searchFriends", async (req, res) => {
   const searchQuery = req.query.q;
-  const username = req.session.username; 
+  const username = req.session.username;
 
   const query = `
     SELECT users.*
@@ -282,7 +288,7 @@ app.get("/searchFriends", async (req, res) => {
     WHERE friendships.user_username = $1 AND users.username LIKE $2
   `;
 
-  const friends = await db.any(query, [username, '%' + searchQuery + '%']);
+  const friends = await db.any(query, [username, "%" + searchQuery + "%"]);
 
   res.json(friends);
 });
@@ -302,52 +308,54 @@ app.post("/addUserToGroup", async (req, res) => {
   if (friendshipExists) {
     // Add the user to the list of users to be added to the group
     usersToAdd.push({ friend_username, groupName });
-    res.json({ status: "success", message: `${friend_username} will be added to group` });
+    res.json({
+      status: "success",
+      message: `${friend_username} will be added to group`,
+    });
   } else {
-    res.json({ status: "failure", message: `You are not friends with ${friend_username}` });
+    res.json({
+      status: "failure",
+      message: `You are not friends with ${friend_username}`,
+    });
   }
 });
 
 app.post("/addGroupMembers", async (req, res) => {
   const { groupName, groupMembers } = req.body;
 
-  db.one('SELECT id FROM groups WHERE group_name = $1', [groupName])
-  .then(async data => {
-    console.log(data.id); // this will log the group id
-    let groupId = data.id;
+  db.one("SELECT id FROM groups WHERE group_name = $1", [groupName])
+    .then(async (data) => {
+      console.log(data.id); // this will log the group id
+      let groupId = data.id;
 
-    try {
-      // Start a database transaction
-      await db.tx(async t => {
-        // For each username in the array, insert a new row in the group_members table
-        for (const username of groupMembers) {
-          await t.none("INSERT INTO group_members (group_id, username) VALUES ($1, $2)", [groupId, username]);
-        }
-      });
+      try {
+        // Start a database transaction
+        await db.tx(async (t) => {
+          // For each username in the array, insert a new row in the group_members table
+          for (const username of groupMembers) {
+            await t.none(
+              "INSERT INTO group_members (group_id, username) VALUES ($1, $2)",
+              [groupId, username]
+            );
+          }
+        });
 
-      res.json({ status: "success",});
-    } catch (error) {
+        res.json({ status: "success" });
+      } catch (error) {
+        console.error(error);
+        res.json({ status: 400, message: "Failed to add group members" });
+      }
+    })
+    .catch((error) => {
       console.error(error);
       res.json({ status: 400, message: "Failed to add group members" });
-    }
-  })
-  .catch(error => {
-    console.error(error);
-    res.json({ status: 400, message: "Failed to add group members" });
-  });
+    });
 });
-
 
 // createGroup
 // GET
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
-});
-
-// * REGISTER ENDPOINTS * //
-// GET
-app.get("/register", (req, res) => {
-  res.render("pages/register", {});
 });
 
 // * REGISTER ENDPOINTS * //
@@ -414,7 +422,6 @@ app.post("/login", async (req, res) => {
       const match = await bcrypt.compare(req.body.password, user.password);
 
       if (match) {
-        console.log("session: ", session, "user", user);
         // Save the user in the session variable
         req.session.user = user;
         req.session.save();
@@ -439,7 +446,8 @@ app.post("/login", async (req, res) => {
     res.render("pages/login", { message: "An error occurred" });
   }
 });
-//* Payment window endpoints *//
+
+//* PAYMENT WINDOW UI ENDPOINTS *//
 function updateUserWallet(username, amount) {
   return new Promise((resolve, reject) => {
     db.beginTransaction((err) => {
@@ -473,7 +481,7 @@ app.post("/update-wallet", async (req, res) => {
   }
 });
 
-//* Payment functionality * //
+//* PAYMENT FUNCTIONALITY ENDPOINTS *//
 app.post("/payment-individual", async (req, res) => {
   const { chargeName, amount, senderUsername, recipientUsername, groupId } =
     req.body;
