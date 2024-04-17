@@ -1,13 +1,127 @@
 {{> header}}
-
-{{message}} {{!-- Group created successfully!, then displays the info of the group, same as when clicking on group from home page (group pic, , users in the group, payment history, etc.--}}
-
-<div class="container">
-    <img src="{{group.image}}" alt="{{group.name}}" class="img-thumbnail">
-    <h3>{{group.name}}</h3>
-    <p>Users: {{group.users}}</p>
-    <p>Payment History: {{group.paymentHistory}}</p>
-</div>
-
+<form id="createGroupForm">
+    <div>
+        <input type="text" id="groupName" placeholder="Group Name..." required>
+        <button id="confirmNameButton">Confirm Name</button>
+    </div>
+    <div>
+        <input type="text" id="search" placeholder="Add friends to group..." disabled>
+        <button id="addUserButton" disabled>Add User</button>
+    </div>
+    <div>
+         <ul id="groupMembers"></ul>
+    </div>
+    <form action="/groups" method="POST" class="form-group">
+    <!-- Your form fields here -->
+    <button id = "submitButton" class="btn btn-lg btn-primary btn-block" type="submit">Create Group</button>
+</form>
 
 {{> footer}}
+<script>
+$(document).ready(function(){
+    let usersToAdd = [];
+    // Enable the rest of the form when the confirmNameButton is clicked and the groupName field is not empty
+    document.querySelector('#confirmNameButton').addEventListener('click', function() {
+        event.preventDefault();
+        const groupName = document.querySelector('#groupName').value;
+        if (groupName === "") {
+            alert("Group name cannot be empty");
+            return;
+        }
+        fetch('/createGroup', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+            group_name: groupName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            // If the group is successfully created, enable the rest of the form
+            if (data.status === 200) {
+                document.querySelector('#search').disabled = false;
+                document.querySelector('#addUserButton').disabled = false;
+                document.querySelector('#createGroupForm button[type="submit"]').disabled = false;
+                document.querySelector('#confirmNameButton').disabled = true;
+                document.querySelector('#groupName').disabled = true;
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+});
+document.querySelector("#search").addEventListener("input", function() {
+    const searchQuery = this.value;
+    fetch("/searchFriends?q=" + searchQuery)
+        .then(response => response.json())
+        .then(data => {
+            // clear the friend list
+
+            // populate the friend list with the returned data
+            data.forEach(function(friend) {
+                const li = document.createElement('li');
+                li.textContent = friend.username;
+                document.querySelector("#groupMembers").appendChild(li);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+});
+document.querySelector("#addUserButton").addEventListener("click", function() {
+    event.preventDefault();
+    const friend_username = document.getElementById("search").value;
+    const groupName = document.getElementById("groupName").value;
+    fetch('/addUserToGroup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ friend_username, groupName }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert(`${friend_username} was added to group ${groupName}`);
+            // Create a new list item with the username and append it to the list
+            const listItem = document.createElement("li");
+            listItem.textContent = friend_username;
+            document.querySelector("#groupMembers").appendChild(listItem);
+            // Clear the search field
+            document.querySelector("#search").value = "";
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+});
+document.querySelector('#submitButton').addEventListener('click', function(event) {
+    event.preventDefault();
+    const groupMembersNodeList = document.querySelectorAll('#groupMembers li');
+    const groupMembers = Array.from(groupMembersNodeList).map(li => li.textContent);
+    const groupName = document.querySelector('#groupName').value;
+    fetch('/addGroupMembers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ groupName, groupMembers }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert(`Group ${groupName} was created with members ${groupMembers.join(', ')}`);
+            window.location.href = `/groups/${groupName}`;
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+});
+</script>

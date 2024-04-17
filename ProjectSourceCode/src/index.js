@@ -82,15 +82,20 @@ let user;
 // * MISCELLANEOUS ENDPOINTS * //
 
 // Dummy endpoint from lab 11
+// * MISCELLANEOUS ENDPOINTS * //
+
+// Dummy endpoint from lab 11
 app.get("/welcome", (req, res) => {
   res.json({ status: "success", message: "Welcome!" });
 });
 
 // Home
+// Home
 app.get("/", (req, res) => {
   res.redirect("/register");
 });
 
+// Home
 // Home
 // GET
 app.get('/home', (req, res) => {
@@ -211,6 +216,20 @@ app.get('/home', (req, res) => {
 app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
 });
+app.get("/home", (req, res) => {
+  res.render("pages/home");
+});
+
+app.get("/test", (req, res) => {
+  res.status(302).redirect("http://127.0.0.1:3000/login");
+});
+
+// Manage Account
+app.get("/manageAccount", (req, res) => {
+  res.render("pages/manageAccount");
+});
+
+// * GROUP ENDPOINTS * //
 
 // Manage Account
 app.get("/manageAccount", (req, res) => {
@@ -222,13 +241,112 @@ app.get("/manageAccount", (req, res) => {
 // createGroup
 // GET
 app.get("/createGroup", (req, res) => {
-  res.render("pages/createGroup", {});
+  res.render("pages/createGroup", {username: req.session.username });
 });
+
+// createGroup
+// Post
+app.post("/createGroup", async (req, res) => {
+  const { group_name } = req.body;
+  const group_admin = req.session.user.username; // or from req.body, depending on your setup
+
+  try {
+    const maxIdResult = await db.one("SELECT MAX(id) FROM groups;");
+    if (maxIdResult.max == null) {
+      maxIdResult.max = 0;
+    };
+    const newId = maxIdResult.max + 1;
+
+    // Insert the new group into the 'groups' table
+    const query = "INSERT INTO groups (id, group_admin_username, group_name) VALUES ($1, $2, $3);";
+    await db.none(query, [newId, group_admin, group_name]);
+
+    res.json({ status: 200, message: "Group created successfully" });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: 400, message: "Failed to create group" });
+  }
+});
+
+
+
+app.get("/searchFriends", async (req, res) => {
+  const searchQuery = req.query.q;
+  const username = req.session.username; 
+
+  const query = `
+    SELECT users.*
+    FROM users
+    INNER JOIN friendships ON users.username = friendships.friend_username
+    WHERE friendships.user_username = $1 AND users.username LIKE $2
+  `;
+
+  const friends = await db.any(query, [username, '%' + searchQuery + '%']);
+
+  res.json(friends);
+});
+
+let usersToAdd = [];
+
+app.post("/addUserToGroup", async (req, res) => {
+  const { friend_username, groupName } = req.body;
+  const user_username = req.session.user.username;
+
+  // Check if a friendship exists between the current user and the user they are trying to add
+  const friendshipExists = await db.one(
+    "SELECT * FROM friendships WHERE user_username = $1 AND friend_username = $2",
+    [user_username, friend_username]
+  );
+
+  if (friendshipExists) {
+    // Add the user to the list of users to be added to the group
+    usersToAdd.push({ friend_username, groupName });
+    res.json({ status: "success", message: `${friend_username} will be added to group` });
+  } else {
+    res.json({ status: "failure", message: `You are not friends with ${friend_username}` });
+  }
+});
+
+app.post("/addGroupMembers", async (req, res) => {
+  const { groupName, groupMembers } = req.body;
+
+  db.one('SELECT id FROM groups WHERE group_name = $1', [groupName])
+  .then(async data => {
+    console.log(data.id); // this will log the group id
+    let groupId = data.id;
+
+    try {
+      // Start a database transaction
+      await db.tx(async t => {
+        // For each username in the array, insert a new row in the group_members table
+        for (const username of groupMembers) {
+          await t.none("INSERT INTO group_members (group_id, username) VALUES ($1, $2)", [groupId, username]);
+        }
+      });
+
+      res.json({ status: "success",});
+    } catch (error) {
+      console.error(error);
+      res.json({ status: 400, message: "Failed to add group members" });
+    }
+  })
+  .catch(error => {
+    console.error(error);
+    res.json({ status: 400, message: "Failed to add group members" });
+  });
+});
+
 
 // createGroup
 // GET
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
+});
+
+// * REGISTER ENDPOINTS * //
+// GET
+app.get("/register", (req, res) => {
+  res.render("pages/register", {});
 });
 
 // * REGISTER ENDPOINTS * //
@@ -431,5 +549,19 @@ app.get("/logout", (req, res) => {
 // <!-- Section 5 : Start Server-->
 // *****************************************************
 // starting the server and keeping the connection open to listen for more requests
-module.exports = app.listen(3000);
-console.log("Server is listening on port 3000");
+
+module.exports = app.listen(3000, () => {
+  /*const insertTestFriendships = `
+    INSERT INTO friendships (username, friend_username)
+    VALUES ('a', 'c');
+  `;
+  db.none(insertTestFriendships)
+    .then(() => {
+      console.log('Test friendships inserted successfully');
+    })
+    .catch(error => {
+      console.error('Failed to insert test friendships:', error);
+    });*/
+
+  console.log("Server is listening on port 3000");
+});
