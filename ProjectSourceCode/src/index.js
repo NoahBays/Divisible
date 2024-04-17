@@ -13,6 +13,10 @@ const session = require("express-session"); // To set the session object. To sto
 const bcrypt = require("bcrypt"); //  To hash passwords
 const axios = require("axios"); // To make HTTP requests from our server. We'll learn more about it in Part C.
 
+Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
+  return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+});
+
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
 // *****************************************************
@@ -82,6 +86,9 @@ let user;
 // * MISCELLANEOUS ENDPOINTS * //
 
 // Dummy endpoint from lab 11
+// * MISCELLANEOUS ENDPOINTS * //
+
+// Dummy endpoint from lab 11
 app.get("/welcome", (req, res) => {
   res.json({ status: "success", message: "Welcome!" });
 });
@@ -97,74 +104,140 @@ app.get('/home', (req, res) => {
   //Find user, friendships, if user is an admin in any groups, members user is a part of
   db.task('Find user, friends, admins, and group members', function(task){
     return task.batch([
-      task.one("SELECT * FROM users WHERE username = $1", [req.session.user.username]), 
+      task.one("SELECT username, wallet FROM users WHERE username = $1", [req.session.user.username]), 
       task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
-      task.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
+      task.any("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
       task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username]),
     ]);
   })
-    .then(user_data => {
-
-  //Checks for null values for admin status and group member status
-  if(!user_data[2] && !user_data[3][0])
+  .then(user_data => {
+    const admin_members_arr = [];
+    const not_admin_members_arr = [];
+    const not_admin_arr = [];
+    for(let i = 0; i < user_data[2].length; i++)
+    {
+      if(user_data[2])
       {
-        res.render("pages/home",{
-          user: user_data[0],
-          friendships: user_data[1]
-        });
-      }
-      else
-      {
-        //Find groups where user is not admin and find the admin of that group
-        db.task('Find group members when user is admin and when user is not admin', function(task){
-          return task.batch([
-            task.any("SELECT * FROM groups WHERE id = $1", [user_data[3][0].group_id]),
-            task.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][0].group_id])
-          ]);
-        })
-        .then(group_data => {
-          //If user is an admin in a group
-          if(user_data[2])
+        db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[2][i].id])
+        .then(admin_members_data => {
+          for(let j = 0; j < admin_members_data.length; j++)
           {
-            db.any("SELECT * FROM group_members WHERE group_id = $1", [user_data[2].id])
-            .then(admin_data => {
-              res.render("pages/home",{
-              //If all goes right, send to home page with data
-                user: user_data[0],
-                friendships: user_data[1],
-                admin: user_data[2],
-                admin_members: admin_data,
-                not_admin: group_data[0][0],
-                not_admin_members: group_data[1]
-              });
-            })
-            .catch(err => {console.log(err);res.redirect('/login');});
-          }
-          else
-          {
-            //Send to home page with data; user is not an admin
-              res.render("pages/home",{
-                user: user_data[0],
-                friendships: user_data[1],
-                admin: user_data[2],
-                not_admin: group_data[0][0],
-                not_admin_members: group_data[1],
-              });
+            admin_members_arr.push(admin_members_data[j]);
           }
         })
         .catch(err => {console.log(err);res.redirect('/login');});
       }
+    }
+    for(let i = 0; i < user_data[3].length; i++)
+    {
+      if(user_data[3])
+      {
+        db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][i].group_id])
+        .then(not_admin_members_data => {
+          for(let j = 0; j < not_admin_members_data.length; j++)
+          {
+            not_admin_members_arr.push(not_admin_members_data[j]);
+            // console.log("not_admin_members_arr = ", not_admin_members_arr);
+          }
+        })
+        .catch(err => {console.log(err);res.redirect('/login');});
+      }
+    }
+    for(let i = 0; i < user_data[3].length; i++)
+    {
+      if(user_data[3])
+      {
+        db.any("SELECT * FROM groups WHERE id = $1", [user_data[3][i].group_id])
+        .then(not_admin_data => {
+          for(let j = 0; j < not_admin_data.length; j++)
+          {
+            not_admin_arr.push(not_admin_data[j]);
+            // console.log("not_admin_arr = ", not_admin_arr);
+          }
+        })
+        .catch(err => {console.log(err);res.redirect('/login');});
+      }
+    }
+    res.render("pages/home",{
+      user: user_data[0],
+      friendships: user_data[1],
+      admin: user_data[2],
+      admin_members: admin_members_arr,
+      not_admin: not_admin_arr,
+      not_admin_members: not_admin_members_arr
+    });
     })
     .catch(err => {console.log(err);res.redirect('/login');});
+  });
+
+  app.get('/group', function (req, res) {
+    // Fetch query parameters from the request object
+    var current_id = req.query.id;
+    var current_group_admin = req.query.group_admin_username;
+    var current_user = req.session.user.username; //for differing views based on whether current user is group admin or not - currently not implemented
+  
+    // Multiple queries using templated strings
+    var current_id = `select * from groups where id = '${current_id}';`;
+    var current_group_admin = `select * from groups where group_admin_username = '${current_group_admin}';`;
+  
+    // use task to execute multiple queries
+    db.task('get-everything', task => {
+      return task.batch([task.any(current_id), task.any(current_group_admin)]);
+    })
+      // if query execution succeeds
+      // query results can be obtained
+      // as shown below
+      .then(data => {
+
+        db.task('Find all group members of given group', function (task){
+          return task.any("SELECT * from group__members where group_id = $1", [current_id]);
+        })
+        .then(group_data => {
+          //Checks for valid data for group_id and group_admin_username
+          if(data[0] && data[1])
+          {
+            res.render("pages/group",{
+              current_id: data[0],
+              current_group_admin: data[1],
+              group_members_data: group_data,
+            });
+          }
+          else{
+            res.render("pages/login") //would like to return home upon unsuccessful attetmpt, not implemented yet
+          }
+
+        })
+      })
+      // if query execution fails
+      // send error message
+      /*.catch(err => {
+        console.log('Uh Oh spaghettio');
+        console.log(err);
+        res.status('400').json({
+          current_id: '',
+          current_group_admin: '',
+          error: err,
+        });
+      });*/
   });
 
 app.get("/test", (req, res) => {
   res.status(302).redirect("http://127.0.0.1:3000/login");
 });
-
-app.get("/group", (req, res) => {
-  res.render("pages/group");
+app.get("/home", (req, res) => {
+  res.render("pages/home");
 });
+
+app.get("/test", (req, res) => {
+  res.status(302).redirect("http://127.0.0.1:3000/login");
+});
+
+// Manage Account
+app.get("/manageAccount", (req, res) => {
+  res.render("pages/manageAccount");
+});
+
+// * GROUP ENDPOINTS * //
 
 // Manage Account
 app.get("/manageAccount", (req, res) => {
@@ -176,13 +249,112 @@ app.get("/manageAccount", (req, res) => {
 // createGroup
 // GET
 app.get("/createGroup", (req, res) => {
-  res.render("pages/createGroup", {});
+  res.render("pages/createGroup", {username: req.session.username });
 });
+
+// createGroup
+// Post
+app.post("/createGroup", async (req, res) => {
+  const { group_name } = req.body;
+  const group_admin = req.session.user.username; // or from req.body, depending on your setup
+
+  try {
+    const maxIdResult = await db.one("SELECT MAX(id) FROM groups;");
+    if (maxIdResult.max == null) {
+      maxIdResult.max = 0;
+    };
+    const newId = maxIdResult.max + 1;
+
+    // Insert the new group into the 'groups' table
+    const query = "INSERT INTO groups (id, group_admin_username, group_name) VALUES ($1, $2, $3);";
+    await db.none(query, [newId, group_admin, group_name]);
+
+    res.json({ status: 200, message: "Group created successfully" });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: 400, message: "Failed to create group" });
+  }
+});
+
+
+
+app.get("/searchFriends", async (req, res) => {
+  const searchQuery = req.query.q;
+  const username = req.session.username; 
+
+  const query = `
+    SELECT users.*
+    FROM users
+    INNER JOIN friendships ON users.username = friendships.friend_username
+    WHERE friendships.user_username = $1 AND users.username LIKE $2
+  `;
+
+  const friends = await db.any(query, [username, '%' + searchQuery + '%']);
+
+  res.json(friends);
+});
+
+let usersToAdd = [];
+
+app.post("/addUserToGroup", async (req, res) => {
+  const { friend_username, groupName } = req.body;
+  const user_username = req.session.user.username;
+
+  // Check if a friendship exists between the current user and the user they are trying to add
+  const friendshipExists = await db.one(
+    "SELECT * FROM friendships WHERE user_username = $1 AND friend_username = $2",
+    [user_username, friend_username]
+  );
+
+  if (friendshipExists) {
+    // Add the user to the list of users to be added to the group
+    usersToAdd.push({ friend_username, groupName });
+    res.json({ status: "success", message: `${friend_username} will be added to group` });
+  } else {
+    res.json({ status: "failure", message: `You are not friends with ${friend_username}` });
+  }
+});
+
+app.post("/addGroupMembers", async (req, res) => {
+  const { groupName, groupMembers } = req.body;
+
+  db.one('SELECT id FROM groups WHERE group_name = $1', [groupName])
+  .then(async data => {
+    console.log(data.id); // this will log the group id
+    let groupId = data.id;
+
+    try {
+      // Start a database transaction
+      await db.tx(async t => {
+        // For each username in the array, insert a new row in the group_members table
+        for (const username of groupMembers) {
+          await t.none("INSERT INTO group_members (group_id, username) VALUES ($1, $2)", [groupId, username]);
+        }
+      });
+
+      res.json({ status: "success",});
+    } catch (error) {
+      console.error(error);
+      res.json({ status: 400, message: "Failed to add group members" });
+    }
+  })
+  .catch(error => {
+    console.error(error);
+    res.json({ status: 400, message: "Failed to add group members" });
+  });
+});
+
 
 // createGroup
 // GET
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
+});
+
+// * REGISTER ENDPOINTS * //
+// GET
+app.get("/register", (req, res) => {
+  res.render("pages/register", {});
 });
 
 // * REGISTER ENDPOINTS * //
@@ -387,5 +559,19 @@ app.get("/logout", (req, res) => {
 // <!-- Section 5 : Start Server-->
 // *****************************************************
 // starting the server and keeping the connection open to listen for more requests
-module.exports = app.listen(3000);
-console.log("Server is listening on port 3000");
+
+module.exports = app.listen(3000, () => {
+  /*const insertTestFriendships = `
+    INSERT INTO friendships (username, friend_username)
+    VALUES ('a', 'c');
+  `;
+  db.none(insertTestFriendships)
+    .then(() => {
+      console.log('Test friendships inserted successfully');
+    })
+    .catch(error => {
+      console.error('Failed to insert test friendships:', error);
+    });*/
+
+  console.log("Server is listening on port 3000");
+});
