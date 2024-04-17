@@ -3,14 +3,14 @@
 CREATE TABLE users (
     username VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255),
-    wallet float
+    wallet FLOAT
 );
 
 -- Create the friends table
 CREATE TABLE friendships (
     user_username VARCHAR(255),
     friend_username VARCHAR(255),
-    outstanding_balance float,
+    outstanding_balance FLOAT,
     PRIMARY KEY (user_username, friend_username),
     FOREIGN KEY (user_username) REFERENCES users(username),
     FOREIGN KEY (friend_username) REFERENCES users(username)
@@ -20,6 +20,7 @@ CREATE TABLE friendships (
 CREATE TABLE groups (
     id INT PRIMARY KEY,
     group_admin_username VARCHAR(255),
+    group_name VARCHAR(255),
     FOREIGN KEY (group_admin_username) REFERENCES users(username)
 );
 

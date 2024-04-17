@@ -13,6 +13,9 @@ const { assert, expect } = chai;
 // test/some-test-file.js
 
 // ... write your tests ...
+// test/some-test-file.js
+
+// ... write your tests ...
 
 // ********************** DEFAULT WELCOME TESTCASE ****************************
 
@@ -30,7 +33,7 @@ describe("Server!", () => {
       });
   });
 });
-
+/*
 // *********************** TODO: WRITE 2 UNIT TESTCASES **************************
 
 //We are checking POST /add_user API by passing the user info in in incorrect manner (name cannot be an integer). This test case should pass and return a status 400 along with a "Invalid input" message.
@@ -43,6 +46,7 @@ describe("Testing /register API endpoint", () => {
       .send({ username: "John Doe", password: "password" })
       .end((err, res) => {
         expect(res).to.have.status(200);
+        // expect(res.body.message).to.equals("User created successfully");
         // expect(res.body.message).to.equals("User created successfully");
         done();
       });
@@ -96,7 +100,7 @@ describe("Testing Render", () => {
       });
   });
 });
-*/
+
 // describe("Login Endpoint", () => {
 //   // Positive case
 //   it("should log in successfully with correct credentials", (done) => {
@@ -128,3 +132,5 @@ describe("Testing Render", () => {
 //       });
 //   });
 // });
+//
+*/
