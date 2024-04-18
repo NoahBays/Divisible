@@ -180,15 +180,25 @@ app.get("/home", (req, res) => {
     });
 });
 
-app.get("/group", function (req, res) {
-  // Fetch query parameters from the request object
-  var current_id = req.query.id;
-  var current_group_admin = req.query.group_admin_username;
-  var current_user = req.session.user.username; //for differing views based on whether current user is group admin or not - currently not implemented
+app.get('/group/:group_name', (req, res) => {
+  const name = req.params.group_name;
+  res.render('pages/group/' + name, {});
+});
 
-  // Multiple queries using templated strings
-  var current_id = `select * from groups where id = '${current_id}';`;
-  var current_group_admin = `select * from groups where group_admin_username = '${current_group_admin}';`;
+app.post('/group/:group_name', function (req, res) {
+  // Fetch query parameters from the request object
+  //var current_id = req.body.id;
+
+  db.task("Find group id with given group name", function (task){
+    return task.oneOrNone("SELECT id FROM groups WHERE group_name = $1", [
+      req.body.group_name,
+    ]);
+  })
+
+  .then((group_id_data => {
+    var current_id = `select * from groups where id = '${group_id_data}';`;
+    var current_group_admin = `select group_admin_username from groups where id = '${group_id_data}';`;
+    // Multiple queries using templated strings
 
   // use task to execute multiple queries
   db.task("get-everything", (task) => {
@@ -205,7 +215,7 @@ app.get("/group", function (req, res) {
       }).then((group_data) => {
         //Checks for valid data for group_id and group_admin_username
         if (data[0] && data[1]) {
-          res.render("pages/group", {
+          res.render("pages/group" + req.body.group_name, {
             current_id: data[0],
             current_group_admin: data[1],
             group_members_data: group_data,
@@ -215,6 +225,11 @@ app.get("/group", function (req, res) {
         }
       });
     });
+  }))
+  
+  var current_user = req.session.user.username; //for differing views based on whether current user is group admin or not - currently not implemented
+
+  
   // if query execution fails
   // send error message
   /*.catch(err => {

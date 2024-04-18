@@ -31,7 +31,7 @@
                 <tbody>
 <!--If user is admin in a group -->
                 <tr>
-                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold">{{admin.group_name}}</a></th>
+                    <th><a class="btn" id="groupButton"onclick="location.href = ('../group/{{admin.group_name}}')" style="font-weight:bold">{{admin.group_name}}</a></th>
                 </tr>
                 <tr>
                     <th>{{admin.group_admin_username}}</th>
@@ -47,7 +47,7 @@
                 <tbody>    
     <!--If user is a member in a group-->
                 <tr>
-                    <th><a class="btn" onclick="location.href='../ExampleGroup'" style="font-weight:bold" >{{not_admin.group_name}}</a></th>
+                    <th><a class="btn" id="groupButton"onclick="location.href = ('../group/{{not_admin.group_name}}')" style="font-weight:bold" >{{not_admin.group_name}}</a></th>
                 </tr>
                 <tr>
                     <th>{{not_admin.group_admin_username}}</th>
@@ -87,3 +87,42 @@
         </table>
     </div>
 </div>
+
+<script>
+$(document).ready(function(){
+    let usersToAdd = [];
+    // Enable the rest of the form when the confirmNameButton is clicked and the groupName field is not empty
+    document.querySelector('#groupButton').addEventListener('click', function() {
+        event.preventDefault();
+        const groupName = document.querySelector('#groupButton').value;
+        if (groupName === "") {
+            alert("Group name cannot be empty");
+            return;
+        }
+        fetch('/group/' + groupName, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+            group_name: groupName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            // If the group is successfully created, enable the rest of the form
+            if (data.status === 200) {
+                document.querySelector('#search').disabled = false;
+                document.querySelector('#addUserButton').disabled = false;
+                document.querySelector('#createGroupForm button[type="submit"]').disabled = false;
+                document.querySelector('#confirmNameButton').disabled = true;
+                document.querySelector('#groupName').disabled = true;
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+});
+</script>
