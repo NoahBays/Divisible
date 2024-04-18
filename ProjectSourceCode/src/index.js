@@ -17,6 +17,7 @@ Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
   return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
 });
 
+
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
 // *****************************************************
@@ -106,6 +107,7 @@ app.get("/home", (req, res) => {
       task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
       task.any("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
       task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username]),
+      task.any("SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date", [req.session.user.username])
     ]);
   })
   .then(user_data => {
@@ -156,9 +158,12 @@ app.get("/home", (req, res) => {
         .catch(err => {console.log(err);res.redirect('/login');});
       }
     }
+    console.log("user_data[0] = ", user_data[0]);
+    console.log("user_data[4] = ", user_data[4]);
     res.render("pages/home",{
       user: user_data[0],
       friendships: user_data[1],
+      transactions: user_data[4],
       admin: user_data[2],
       admin_members: admin_members_arr,
       not_admin: not_admin_arr,
