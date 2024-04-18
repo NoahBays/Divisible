@@ -206,6 +206,34 @@ app.get("/home", (req, res) => {
     });
 });
 
+// viewUser
+
+app.get("/viewUser/:username", async (req, res) => {
+  const loggedInUsername = req.session.user.username;
+  const visitingUsername = req.params.username;
+
+  try {
+    const friendship = await db.oneOrNone(
+      "SELECT * FROM friendships WHERE (user_username = $1 AND friend_username = $2) OR (user_username = $2 AND friend_username = $1)",
+      [loggedInUsername, visitingUsername]
+    );
+
+    //converts to boolean
+    const isFriend = !!friendship;
+    if (!isFriend) {
+      res.redirect("/home");
+      return;
+    }
+    else {
+    // Fetch the user data of the visiting user
+    res.render("pages/viewUser", {isFriend });
+    }
+  } catch (error) {
+    console.error(error);
+    alert("An error occurred while fetching user data");
+  }
+});
+
 app.get("/group", function (req, res) {
   // Fetch query parameters from the request object
   var current_id = req.query.id;

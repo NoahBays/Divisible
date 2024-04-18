@@ -83,8 +83,7 @@
                     <tr>
                         <td>
                             <!--<img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">-->
-                            <a class="btn" onclick="location.href='../ExampleFriend'">{{this.friend_username}}</a>
-                        </td>
+                            <a class="btn" id = "viewUserButton" href="/viewUser/{{this.friend_username}}">{{this.friend_username}}</a></td>
                         <td>
                             {{#if this.outstanding_balance}}
                                 <h5>Outstanding balance: ${{this.outstanding_balance}}</h5>
@@ -129,3 +128,22 @@
         </table>
     </div>
 </div>
+
+
+<script>
+$(document).ready(function(){
+    document.querySelector('#viewUserButton').addEventListener('click', function() {
+        var username = this.friend_username;
+        fetch('/viewUser/' + username, {
+            method: 'GET',
+            headers: {
+            'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+});
+</script>
