@@ -1,58 +1,71 @@
-{{!-- <h1>Register</h1>
+<style>
+    * { margin: 0; padding: 0; } 
+    
+    .imgbox { 
+      position: relative; width: 100%;
+      height: 100vh; background: url('images/SplashPage.png') no-repeat center
+      center/cover; 
+      cursor: none
+    }
 
+    .box {
+      display: inline-block;
+      padding: 15px;
+      backdrop-filter: blur(35px);
+      background: rgba(12, 12, 12, 0.4);
+      box-sizing: border-box;
+      box-shadow: 0px 0px 15px rgba(6, 6, 6, 0.35);
+      border-radius: 20px;
+    }
 
-<form method = "POST" action = "/registerpage">
-    <div>
-        <label for = "userTitle">Username</label>
-    </div>
-    <div>
-        <input type = "text" name = "username"/>
-    </div>
-    <div>
-        <label for = "passTitle">Password</label>
-    </div>
-    <div>
-        <input type = "password" name = "password"/>
-    </div>
-    <div>
-        <button type = 'submit'>Register</button>
-    </div>
-</form>
+  .image-container img {
+    position: absolute; top: 35%; left: 50%; transform: translate(-50%, -25%);
+    width: auto;height: 19.5vh; } 
+    
+  .subtext-container img { width: auto; height: 7.2vh; }
 
+  .light-effect {
+    position: fixed; /* Ensures the light stays positioned relative to the viewport */
+    left: 0; /* Initial position (updated by JavaScript) */
+    top: 0; /* Initial position (updated by JavaScript) */
+    width: 16vh; /* Example width */
+    height: 16vh; /* Example height */
+    background-color: rgba(255, 236, 199, 0.5); /* White with transparency */
+    border-radius: 50%; /* Circular light effect */
+    filter: blur(40px); 
+  }
+</style>
+<div class="imgbox">
+  {{> message }}
+  <div class="image-container">
+    <img src="images/DivisibleLogo.png" alt="Logo" />
+  </div>
+  <div class="light-effect"></div>
+  <script>
+    document.addEventListener('mousemove', (event) => {
+      updateLightPosition(event.clientX, event.clientY);
+    });
 
-<div>
-    <p>Already have an account?</p>
-    <a class = "nav-link" href = "/login">Login</a>
-</div> --}}
-
-<div class="d-flex justify-content-center vh-100">
-  <div class="col-lg-4">
-    <form action="/register" method="POST" class="form-signin">
-      {{> message }}
-      <h1 class="h3 mb-3 fw-bold mt-3">Register</h1>
-      <label for="username" class="sr-only">Username:</label>
-      <input
-        type="username"
-        id="username"
-        name="username"
-        class="form-control mb-3"
-        placeholder="Username"
-        required
-        autofocus
-      />
-      <label for="password" class="sr-only">Password:</label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        class="form-control mb-3"
-        placeholder="Password"
-        required
-      />
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
-      <p class="mt-3 text-center">
-        Already have an account? <a href="/login">Log in</a>
-      </p>
+    function updateLightPosition(x, y) {
+      const lightElement = document.querySelector('.light-effect'); // Replace with your element selector
+      lightElement.style.left = `${x - 60}px`;
+      lightElement.style.top = `${y - 60}px`;
+    }
+  </script>  
+  <div class="subtext-container" style="position: absolute; top: 35vw; left: 50%; transform: translate(-50%, -25%); ">
+    <img src="images/subtext.png" alt="Subtext" />
+  </div>
+{{> featureCircle image="images/WalletIcon.png" position="absolute; top: 3vw; left: 19vw;" }}
+{{> featureCircle image="images/CashIcon.png" position="absolute; bottom: 22vh; right: 5vw;" }}
+  <div class="box" style="position: absolute; top: 45vw; left: 50%; transform: translate(-50%, -50%);">
+    <form action="/register" method="POST" style="display: flex; flex-direction: row; justify-content: center;">
+      {{>input type="username" name="username" placeholder="Username" style="margin-right: 1.5vw" required="true"}}
+      {{>input type="password" name="password" placeholder="Password" style="margin-right: 3vw" required="true"}}
+      {{>button buttonText="Register"}}
     </form>
+  </div>
+  <div style="position: absolute; text-align: center; bottom: 10%; color: F5F5F5; left: 50%; transform: translateX(-50%);">
+    <p>Already have an account? <a href="/login" style="color: #00FF94">Log in</a></p>
+  </div>
   </div>
 </div>
