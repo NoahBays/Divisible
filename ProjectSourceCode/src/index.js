@@ -22,7 +22,7 @@ const hbs = handlebars.create({
   extname: "hbs",
   layoutsDir: __dirname + "/views/layouts",
   partialsDir: __dirname + "/views/partials",
-  imageDir: __dirname + "/public/images",
+  // imageDir: __dirname + "/public/images",
 });
 
 // database configuration
@@ -70,6 +70,12 @@ app.use(
     extended: true,
   })
 );
+
+// Serve static image files
+app.use("/images", express.static(path.join(__dirname, "public/images")));
+
+// Serve static font files
+app.use("/fonts", express.static(path.join(__dirname, "public/fonts")));
 
 // We create the user variable up here and populate it after the fact so that we can access it in /manageAccount as well as set it in /login
 let user;

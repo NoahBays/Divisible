@@ -1,42 +1,127 @@
-{{!-- <h1>Register</h1>
+<style>
+  * { margin: 0; padding: 0; } .imgbox { position: relative; width: 100%;
+  height: 100vh; background: url('images/SplashPage.png') no-repeat center
+  center/cover; }
+.registerbox {
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width:35.5%;
+  height: 9.6%;
+  padding: 15px;
+  backdrop-filter: blur(35px);
+  background: rgba(12, 12, 12, 0.4);
+  box-sizing: border-box;
+  box-shadow: 0px 0px 15px rgba(6, 6, 6, 0.35);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+.image-container img {
+  position: absolute; top: 35%; left: 50%; transform: translate(-50%, -25%);
+  width: auto;height: 19.5vh; } .subtext-container img { position: absolute;
+  top: 62%; left: 50%; transform: translate(-50%, -25%); width: auto;height:
+  7.2vh; }
+.button {
+  appearance: button;
+  backface-visibility: hidden;
+  background-color: rgba(0, 255, 148);
+  border-radius: 13px;
+  border-width: 0;
+  box-sizing: border-box;
+  color: #0C0C0C;
+  cursor: pointer;
+  font-size: 30;
+  width: 10vw;
+  height: 6vh;
+  line-height: 1.15;
+  outline: none;
+  overflow: hidden;
+  padding: 0 25px;
+  position: relative;
+  text-align: center;
+  text-transform: none;
+  transform: translateZ(0);
+  transition: all .2s,box-shadow .08s ease-in;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
 
+.button:disabled {
+  cursor: default;
+}
 
-<form method = "POST" action = "/registerpage">
-    <div>
-        <label for = "userTitle">Username</label>
-    </div>
-    <div>
-        <input type = "text" name = "username"/>
-    </div>
-    <div>
-        <label for = "passTitle">Password</label>
-    </div>
-    <div>
-        <input type = "password" name = "password"/>
-    </div>
-    <div>
-        <button type = 'submit'>Register</button>
-    </div>
-</form>
+.button:focus {
+  box-shadow: rgba(50, 50, 93, .1) 0 0 0 1px inset, rgba(50, 50, 93, .2) 0 6px 15px 0, rgba(0, 0, 0, .1) 0 2px 2px 0, rgba(50, 151, 211, .3) 0 0 0 4px;
+}
 
+.feature-outer-circle {
+  background-color: rgba(12,12,12,0.4);
+  border-radius: 100%;
+  height: 35vh;
+  width: 35vh;
+  backdrop-filter: blur(35px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-<div>
-    <p>Already have an account?</p>
-    <a class = "nav-link" href = "/login">Login</a>
-</div> --}}
-
-<div class="d-flex justify-content-center vh-100">
-  <div class="col-lg-4">
-    <form action="/register" method="POST" class="form-signin">
-      {{> message }}
-      <h1 class="h3 mb-3 fw-bold mt-3">Register</h1>
+.feature-inner-circle {
+  background-color: rgba(26,26,26,0.5);
+  border-radius: 100%;
+  height: 26vh;
+  width: 26vh;
+  backdrop-filter: blur(35px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.feature-image {
+  width: 6vw;
+  height: 6vw;
+  object-fit: cover;
+  border-radius: 100%;
+}
+</style>
+<div class="imgbox">
+  {{> message }}
+  <div class="image-container">
+    <img src="images/DivisibleLogo.png" alt="Logo" />
+  </div>
+  <div class="subtext-container">
+    <img src="images/subtext.png" alt="Subtext" />
+  </div>
+<div class="feature-outer-circle" style="position: absolute; bottom: 22vh; right: 12vw;">
+  <div class="feature-inner-circle">
+    <img class="feature-image" src="images/CashIcon.png" alt="Cash Icon">
+  </div>
+</div>
+<div class="feature-outer-circle" style="position: absolute; top: 3vw; left: 23vw;">
+  <div class="feature-inner-circle">
+    <img class="feature-image" src="images/WalletIcon.png" alt="Wallet Icon">
+  </div>
+</div>
+<div class="registerbox">
+  <form action="/register" method="POST" >
       <label for="username" class="sr-only">Username:</label>
       <input
         type="username"
         id="username"
         name="username"
-        class="form-control mb-3"
+        class="input-box"
         placeholder="Username"
+        style="
+          width: 10vw;
+          height: 6vh;
+          font-size: 23px;
+          border-radius: 20px;
+          padding-left: 15px;
+          background-color: rgba(43, 43, 43, 0.5);
+          margin-right: 25px;
+        "
         required
         autofocus
       />
@@ -45,14 +130,24 @@
         type="password"
         id="password"
         name="password"
-        class="form-control mb-3"
+        class="input-box"
         placeholder="Password"
+        style="
+          width: 10vw;
+          height: 6vh;
+          font-size: 23px;
+          border-radius: 20px;
+          padding-left: 15px;
+          background-color: rgba(43, 43, 43, 0.5);
+          margin-right: 25px;
+        "
         required
       />
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
-      <p class="mt-3 text-center">
-        Already have an account? <a href="/login">Log in</a>
-      </p>
+      <button class="button" style="margin-left: 35px" type="submit">Register</button>
     </form>
+</div>
+  <div style="position: absolute; text-align: center; bottom: 10%; color: F5F5F5; left: 50%; transform: translateX(-50%);">
+    <p>Already have an account? <a href="/login" style="color: #00FF94">Log in</a></p>
+  </div>
   </div>
 </div>
