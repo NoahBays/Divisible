@@ -13,10 +13,11 @@ const session = require("express-session"); // To set the session object. To sto
 const bcrypt = require("bcrypt"); //  To hash passwords
 const axios = require("axios"); // To make HTTP requests from our server. We'll learn more about it in Part C.
 
-Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
-  return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+Handlebars.registerHelper("ifEquals", function (arg1, arg2, options) {
+  return arg1 == arg2 ? options.fn(this) : options.inverse(this);
 });
 
+Handlebars.registerPartial("registerForm", "{{> registerForm}}");
 
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
@@ -82,6 +83,8 @@ app.use("/images", express.static(path.join(__dirname, "public/images")));
 // Serve static font files
 app.use("/fonts", express.static(path.join(__dirname, "public/fonts")));
 
+// Serve static css files
+
 // We create the user variable up here and populate it after the fact so that we can access it in /manageAccount as well as set it in /login
 let user;
 
@@ -109,72 +112,93 @@ app.get("/home", (req, res) => {
   //Find user, friendships, if user is an admin in any groups, members user is a part of
   db.task("Find user, friends, admins, and group members", function (task) {
     return task.batch([
-      task.one("SELECT username, wallet FROM users WHERE username = $1", [req.session.user.username]), 
-      task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
-      task.any("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
-      task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username]),
-      task.any("SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date", [req.session.user.username])
+      task.one("SELECT username, wallet FROM users WHERE username = $1", [
+        req.session.user.username,
+      ]),
+      task.any(
+        "SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username",
+        [req.session.user.username]
+      ),
+      task.any("SELECT * FROM groups WHERE group_admin_username = $1", [
+        req.session.user.username,
+      ]),
+      task.any(
+        "SELECT * FROM group_members WHERE username = $1 ORDER BY username",
+        [req.session.user.username]
+      ),
+      task.any(
+        "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date",
+        [req.session.user.username]
+      ),
     ]);
   })
-  .then(user_data => {
-    const admin_members_arr = [];
-    const not_admin_members_arr = [];
-    const not_admin_arr = [];
-    for(let i = 0; i < user_data[2].length; i++)
-    {
-      if(user_data[2])
-      {
-        db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[2][i].id])
-        .then(admin_members_data => {
-          for(let j = 0; j < admin_members_data.length; j++)
-          {
-            admin_members_arr.push(admin_members_data[j]);
-          }
-        })
-        .catch(err => {console.log(err);res.redirect('/login');});
+    .then((user_data) => {
+      const admin_members_arr = [];
+      const not_admin_members_arr = [];
+      const not_admin_arr = [];
+      for (let i = 0; i < user_data[2].length; i++) {
+        if (user_data[2]) {
+          db.any(
+            "SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id",
+            [user_data[2][i].id]
+          )
+            .then((admin_members_data) => {
+              for (let j = 0; j < admin_members_data.length; j++) {
+                admin_members_arr.push(admin_members_data[j]);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              res.redirect("/login");
+            });
+        }
       }
-    }
-    for(let i = 0; i < user_data[3].length; i++)
-    {
-      if(user_data[3])
-      {
-        db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][i].group_id])
-        .then(not_admin_members_data => {
-          for(let j = 0; j < not_admin_members_data.length; j++)
-          {
-            not_admin_members_arr.push(not_admin_members_data[j]);
-            // console.log("not_admin_members_arr = ", not_admin_members_arr);
-          }
-        })
-        .catch(err => {console.log(err);res.redirect('/login');});
+      for (let i = 0; i < user_data[3].length; i++) {
+        if (user_data[3]) {
+          db.any(
+            "SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id",
+            [user_data[3][i].group_id]
+          )
+            .then((not_admin_members_data) => {
+              for (let j = 0; j < not_admin_members_data.length; j++) {
+                not_admin_members_arr.push(not_admin_members_data[j]);
+                // console.log("not_admin_members_arr = ", not_admin_members_arr);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              res.redirect("/login");
+            });
+        }
       }
-    }
-    for(let i = 0; i < user_data[3].length; i++)
-    {
-      if(user_data[3])
-      {
-        db.any("SELECT * FROM groups WHERE id = $1", [user_data[3][i].group_id])
-        .then(not_admin_data => {
-          for(let j = 0; j < not_admin_data.length; j++)
-          {
-            not_admin_arr.push(not_admin_data[j]);
-            // console.log("not_admin_arr = ", not_admin_arr);
-          }
-        })
-        .catch(err => {console.log(err);res.redirect('/login');});
+      for (let i = 0; i < user_data[3].length; i++) {
+        if (user_data[3]) {
+          db.any("SELECT * FROM groups WHERE id = $1", [
+            user_data[3][i].group_id,
+          ])
+            .then((not_admin_data) => {
+              for (let j = 0; j < not_admin_data.length; j++) {
+                not_admin_arr.push(not_admin_data[j]);
+                // console.log("not_admin_arr = ", not_admin_arr);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              res.redirect("/login");
+            });
+        }
       }
-    }
-    console.log("user_data[0] = ", user_data[0]);
-    console.log("user_data[4] = ", user_data[4]);
-    res.render("pages/home",{
-      user: user_data[0],
-      friendships: user_data[1],
-      transactions: user_data[4],
-      admin: user_data[2],
-      admin_members: admin_members_arr,
-      not_admin: not_admin_arr,
-      not_admin_members: not_admin_members_arr
-    });
+      console.log("user_data[0] = ", user_data[0]);
+      console.log("user_data[4] = ", user_data[4]);
+      res.render("pages/home", {
+        user: user_data[0],
+        friendships: user_data[1],
+        transactions: user_data[4],
+        admin: user_data[2],
+        admin_members: admin_members_arr,
+        not_admin: not_admin_arr,
+        not_admin_members: not_admin_members_arr,
+      });
     })
     .catch((err) => {
       console.log(err);
@@ -394,11 +418,10 @@ app.post("/register", async (req, res) => {
   var money = 0;
 
   // Create a new user
-  await db.none("INSERT INTO users (username, password, wallet) VALUES ($1, $2, $3)", [
-    req.body.username,
-    hash,
-    money
-  ]);
+  await db.none(
+    "INSERT INTO users (username, password, wallet) VALUES ($1, $2, $3)",
+    [req.body.username, hash, money]
+  );
 
   // Send a success response
   res
