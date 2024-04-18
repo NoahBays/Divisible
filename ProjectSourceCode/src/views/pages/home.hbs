@@ -100,13 +100,14 @@ $(document).ready(function(){
             return;
         }
         fetch('/group/' + groupName, {
-            method: 'POST',
+            method: 'GET',
             headers: {
             'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-            group_name: groupName
+            groupName
             })
+            
         })
         .then(response => response.json())
         .then(data => {
