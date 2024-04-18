@@ -94,8 +94,10 @@ document.querySelector("#addUserButton").addEventListener("click", function() {
             document.querySelector("#groupMembers").appendChild(listItem);
             // Clear the search field
             document.querySelector("#search").value = "";
-        } else {
-            alert(data.message);
+        } else{
+            alert(`Either ${friend_username} doesn't exist, or you aren't friends.`);
+            // Clear the search field
+            document.querySelector("#search").value = "";
         }
     })
     .catch((error) => {
