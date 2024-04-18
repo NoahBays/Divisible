@@ -249,16 +249,25 @@ app.get("/createGroup", (req, res) => {
 });
 
 // createGroup
-// Post
 app.post("/createGroup", async (req, res) => {
   const { group_name } = req.body;
   const group_admin = req.session.user.username; // or from req.body, depending on your setup
 
   try {
+    // Check if a group with the same name and admin already exists
+    const existingGroup = await db.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1 AND group_name = $2", [group_admin, group_name]);
+
+    if (existingGroup) {
+      // If the group already exists, send an error message
+      return res.json({ status: 400 });
+    }
+
+    // If the group doesn't exist, continue with the group creation process
     const maxIdResult = await db.one("SELECT MAX(id) FROM groups;");
     if (maxIdResult.max == null) {
       maxIdResult.max = 0;
     }
+
     const newId = maxIdResult.max + 1;
 
     // Insert the new group into the 'groups' table
@@ -269,7 +278,7 @@ app.post("/createGroup", async (req, res) => {
     res.json({ status: 200, message: "Group created successfully" });
   } catch (error) {
     console.error(error);
-    res.json({ status: 400, message: "Failed to create group" });
+    res.json({ status: 401 });
   }
 });
 

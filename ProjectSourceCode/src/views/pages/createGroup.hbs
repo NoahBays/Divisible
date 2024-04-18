@@ -45,11 +45,16 @@ $(document).ready(function(){
             console.log(data);
             // If the group is successfully created, enable the rest of the form
             if (data.status === 200) {
+
                 document.querySelector('#search').disabled = false;
                 document.querySelector('#addUserButton').disabled = false;
                 document.querySelector('#createGroupForm button[type="submit"]').disabled = false;
                 document.querySelector('#confirmNameButton').disabled = true;
                 document.querySelector('#groupName').disabled = true;
+            }
+            else {
+                alert("You are already the admin of a group named " + groupName);
+                document.querySelector('#groupName').value = "";
             }
         })
         .catch((error) => {
