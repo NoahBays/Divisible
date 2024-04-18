@@ -292,26 +292,26 @@ app.get("/searchFriends", async (req, res) => {
 let usersToAdd = [];
 
 app.post("/addUserToGroup", async (req, res) => {
-  const { friend_username, groupName } = req.body;
-  const user_username = req.session.user.username;
+  try {
+    const { friend_username, groupName } = req.body;
+    const user_username = req.session.user.username;
 
-  // Check if a friendship exists between the current user and the user they are trying to add
-  const friendshipExists = await db.one(
-    "SELECT * FROM friendships WHERE user_username = $1 AND friend_username = $2",
-    [user_username, friend_username]
-  );
+    // Check if a friendship exists between the current user and the user they are trying to add
+    const friendshipExists = await db.one(
+      "SELECT * FROM friendships WHERE user_username = $1 AND friend_username = $2",
+      [user_username, friend_username]
+    );
 
-  if (friendshipExists) {
-    // Add the user to the list of users to be added to the group
-    usersToAdd.push({ friend_username, groupName });
+    if (friendshipExists) {
+      // Add the user to the list of users to be added to the group
+      usersToAdd.push({ friend_username, groupName });
+      res.json({
+        status: "success",
+      });
+    }
+  } catch (error) {
     res.json({
-      status: "success",
-      message: `${friend_username} will be added to group`,
-    });
-  } else {
-    res.json({
-      status: "failure",
-      message: `You are not friends with ${friend_username}`,
+      status: "error",
     });
   }
 });
