@@ -224,41 +224,21 @@ app.get("/viewUser/:username", async (req, res) => {
   res.render("pages/viewUser", { friend: visitingUser, balance: outstanding_balance, isFriend });
 });
 
-app.get("/group", function (req, res) {
+app.get("/group/:group_name", async (req, res) => {
   // Fetch query parameters from the request object
-  var current_id = req.query.id;
-  var current_group_admin = req.query.group_admin_username;
-  var current_user = req.session.user.username; //for differing views based on whether current user is group admin or not - currently not implemented
-
+  const name = req.params.group_name; //for differing views based on whether current user is group admin or not - currently not implemented
+  const currentGroup = await db.oneOrNone("SELECT * FROM groups WHERE group_name = $1", [name]);
   // Multiple queries using templated strings
-  var current_id = `select * from groups where id = '${current_id}';`;
-  var current_group_admin = `select * from groups where group_admin_username = '${current_group_admin}';`;
+  const current_id = currentGroup.id;
+  const currentGroupMembers = await db.manyOrNone("SELECT * FROM group_members WHERE group_id = $1", [current_id]);
 
   // use task to execute multiple queries
-  db.task("get-everything", (task) => {
-    return task.batch([task.any(current_id), task.any(current_group_admin)]);
-  })
-    // if query execution succeeds
-    // query results can be obtained
-    // as shown below
-    .then((data) => {
-      db.task("Find all group members of given group", function (task) {
-        return task.any("SELECT * from group__members where group_id = $1", [
-          current_id,
-        ]);
-      }).then((group_data) => {
         //Checks for valid data for group_id and group_admin_username
-        if (data[0] && data[1]) {
-          res.render("pages/group", {
-            current_id: data[0],
-            current_group_admin: data[1],
-            group_members_data: group_data,
-          });
+        if (currentGroup != null) {
+          res.render("pages/group", {group: currentGroup, groupMembers: currentGroupMembers});
         } else {
           res.render("pages/login"); //would like to return home upon unsuccessful attetmpt, not implemented yet
         }
-      });
-    });
   // if query execution fails
   // send error message
   /*.catch(err => {

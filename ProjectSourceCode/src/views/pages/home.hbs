@@ -34,7 +34,7 @@
                 <tbody>
                     <!--If user is admin in a group -->
                     <tr>
-                        <th width="20%"><a class="btn" onclick="location.href='../group'" style="font-weight:bold">{{this.group_name}}</a></th>
+                        <th width="20%"><a class="btn viewGroup" style="font-weight:bold">{{this.group_name}}</a></th>
                     </tr>
                     <tr>
                         <th>Admin: {{this.group_admin_username}}</th>
@@ -53,7 +53,7 @@
                 <tbody>    
                     <!--If user is a member in a group-->
                     <tr>
-                        <th width="20%"><a class="btn" onclick="location.href='../group'" style="font-weight:bold" >{{this.group_name}}</a></th>
+                        <th width="20%"><a class="btn viewGroup"  style="font-weight:bold" >{{this.group_name}}</a></th>
                     </tr>
                     <tr>
                         <th>Admin: {{this.group_admin_username}}</th>
@@ -131,6 +131,14 @@
 
 <script>
 $(document).ready(function(){
+    document.querySelectorAll('.viewGroup').forEach(function(button) {
+        button.addEventListener('click', function() {
+            window.location.href = '/group/' + this.innerHTML;    
+        });
+    });
+});
+
+$(document).ready(function(){
     document.querySelectorAll('.viewUserButton').forEach(function(button) {
         button.addEventListener('click', function() {
             window.location.href = '/viewUser/' + this.innerHTML;    
@@ -138,3 +146,5 @@ $(document).ready(function(){
     });
 });
 </script>
+
+{{!-- onclick="location.href='../group'" --}}
