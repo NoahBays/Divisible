@@ -100,8 +100,10 @@ app.get("/", (req, res) => {
 // Home
 // GET
 app.get("/home", (req, res) => {
-  //Find user, friendships, if user is an admin in any groups, members user is a part of
-  db.task("Find user, friends, admins, and group members", function (task) {
+  message = req.session.message;
+  req.session.message = null;
+  //Find user, friendships, if user is an admin in any groups, if a member is a part of a group, all transactions related to user
+  db.task("Find user, friends, admins, if in group, and all transactions", function (task) {
     return task.batch([
       task.one("SELECT username, wallet FROM users WHERE username = $1", [req.session.user.username]), 
       task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
@@ -118,6 +120,7 @@ app.get("/home", (req, res) => {
     {
       if(user_data[2])
       {
+        //Find all group members where current user is admin of that group
         db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[2][i].id])
         .then(admin_members_data => {
           for(let j = 0; j < admin_members_data.length; j++)
@@ -132,12 +135,12 @@ app.get("/home", (req, res) => {
     {
       if(user_data[3])
       {
+        //Find all group members where current user is a member of that group
         db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][i].group_id])
         .then(not_admin_members_data => {
           for(let j = 0; j < not_admin_members_data.length; j++)
           {
             not_admin_members_arr.push(not_admin_members_data[j]);
-            // console.log("not_admin_members_arr = ", not_admin_members_arr);
           }
         })
         .catch(err => {console.log(err);res.redirect('/login');});
@@ -147,19 +150,17 @@ app.get("/home", (req, res) => {
     {
       if(user_data[3])
       {
+        //Find the admin where current user is a member of that group
         db.any("SELECT * FROM groups WHERE id = $1", [user_data[3][i].group_id])
         .then(not_admin_data => {
           for(let j = 0; j < not_admin_data.length; j++)
           {
             not_admin_arr.push(not_admin_data[j]);
-            // console.log("not_admin_arr = ", not_admin_arr);
           }
         })
         .catch(err => {console.log(err);res.redirect('/login');});
       }
     }
-    console.log("user_data[0] = ", user_data[0]);
-    console.log("user_data[4] = ", user_data[4]);
     res.render("pages/home",{
       user: user_data[0],
       friendships: user_data[1],
@@ -167,13 +168,36 @@ app.get("/home", (req, res) => {
       admin: user_data[2],
       admin_members: admin_members_arr,
       not_admin: not_admin_arr,
-      not_admin_members: not_admin_members_arr
+      not_admin_members: not_admin_members_arr,
+      message: message
     });
     })
-    .catch((err) => {
-      console.log(err);
-      res.redirect("/login");
+    .catch((err) => {console.log(err);res.redirect("/login");});
+});
+
+app.get("/addMoney", (req, res) => {
+  db.one("SELECT * FROM users WHERE username = $1", [req.session.user.username])
+  .then(data => {
+    res.render("pages/addMoney", {
+      user: data
     });
+  })
+  .catch((err) => {console.log(err);res.redirect("/login");});
+});
+
+app.post("/addMoney", (req, res) => {
+  db.one("SELECT wallet FROM users WHERE username = $1", [req.session.user.username])
+  .then(data => {
+console.log("parseFloat(parseFloat(req.body.money)).toFixed(2) + data.wallet = ", parseFloat(parseFloat(req.body.money).toFixed(2)) + data.wallet);
+    db.none("UPDATE users SET wallet = $1 WHERE username = $2", [parseFloat(parseFloat(req.body.money).toFixed(2))   + data.wallet, req.session.user.username])
+    .then(data2 => {
+      req.session.message = "Money added successfully.";
+
+      res.redirect("/home");
+    })
+    .catch((err) => {console.log(err);res.redirect("/login");});
+  })
+  .catch((err) => {console.log(err);res.redirect("/login");});
 });
 
 app.get("/group", function (req, res) {
