@@ -483,7 +483,7 @@ app.post("/login", async (req, res) => {
   }
 });
 app.post('/payment-individual', async (req, res) => {
-  const { chargeName, amount, senderUsername, recipientUsername, group_name, payback } = req.body;
+  const { chargeName, amount,password, senderUsername, recipientUsername, group_name, payback } = req.body;
 
   // Validate input
   if (amount <= 0) {
@@ -492,6 +492,16 @@ app.post('/payment-individual', async (req, res) => {
 
   try {
     await db.tx(async t => {
+      const user = await t.oneOrNone("SELECT * FROM users WHERE username = $1", [senderUsername]);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        throw new Error('Password incorrect');
+      }
+
       const senderResult = await updateUserWallet(senderUsername, -amount, t);
       if (!senderResult) {
         throw new Error('Failed to update sender\'s wallet or user not found');
