@@ -206,6 +206,24 @@ app.get("/home", (req, res) => {
     });
 });
 
+// viewUser
+
+app.get("/viewUser/:username", async (req, res) => {
+  const loggedInUsername = req.session.user.username;
+  const visitingUsername = req.params.username;
+  const friendship = await db.manyOrNone(
+    "SELECT * FROM friendships WHERE (user_username = $1 AND friend_username = $2) OR (user_username = $2 AND friend_username = $1)",
+    [loggedInUsername, visitingUsername]
+  );
+  const isFriend = !!friendship;
+  
+  // Fetch the user data of the visiting user
+  const visitingUser = await db.oneOrNone("SELECT * FROM users WHERE username = $1", [visitingUsername]);
+  const balanceRow = await db.oneOrNone("SELECT outstanding_balance FROM friendships WHERE user_username = $1 AND friend_username = $2", [loggedInUsername, visitingUsername]);
+  const outstanding_balance = balanceRow ? balanceRow.outstanding_balance : null;
+  res.render("pages/viewUser", { friend: visitingUser, balance: outstanding_balance, isFriend });
+});
+
 app.get("/group", function (req, res) {
   // Fetch query parameters from the request object
   var current_id = req.query.id;

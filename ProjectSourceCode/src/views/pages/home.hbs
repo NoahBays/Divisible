@@ -83,9 +83,7 @@
                     <tr>
                         <td>
                             <!--<img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">-->
-                            <a class="btn" onclick="location.href='../ExampleFriend'">{{this.friend_username}}</a>
-                        </td>
-                        <td>
+                            <a class="btn viewUserButton">{{this.friend_username}}</a></td>                        <td>
                             {{#if this.outstanding_balance}}
                                 <h5>Outstanding balance: ${{this.outstanding_balance}}</h5>
                             {{/if}}
@@ -129,3 +127,14 @@
         </table>
     </div>
 </div>
+
+
+<script>
+$(document).ready(function(){
+    document.querySelectorAll('.viewUserButton').forEach(function(button) {
+        button.addEventListener('click', function() {
+            window.location.href = '/viewUser/' + this.innerHTML;    
+        });
+    });
+});
+</script>
