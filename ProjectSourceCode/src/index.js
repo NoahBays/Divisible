@@ -389,6 +389,35 @@ app.post("/addGroupMembers", async (req, res) => {
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
 });
+
+app.post("/addFriends", async (req, res) => {
+  const { friend } = req.body;
+  const currentUser = req.session.username; 
+
+  try {
+    // Check if the friendship already exists in the friendships table
+    const friendshipExists = await db.oneOrNone(
+      "SELECT * FROM friendships WHERE user_username = $1 AND friend_username = $2",
+      [currentUser, friend]
+    );
+    if (friendshipExists) {
+      return res.json({ status: "failure", message: "Friendship already exists." });
+    }
+
+    // Insert the friendship into the friendships table
+    await db.none(
+      "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)",
+      [currentUser, friend, 0] // outstanding balance would start at 0 no one owes the other person money yet
+    );
+  
+    res.json({ status: "success", message: `${friend} added as a friend.` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: "Failed to add as a friend." });
+  }
+  
+});
+
 app.get("/paymentWindow", (req, res) => {
   res.render("pages/paymentWindow", {});
 });
