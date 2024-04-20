@@ -1,17 +1,19 @@
 {{> header}}
+{{> nav}}
+
 
 <div class="container">
-    <button class="btn btn-primary">Add Friend</button>
+    {{!-- <button class="btn btn-primary">Add Friend</button> --}}
     <div class="row">
-        <h3>{{groups.group_name}}</h3>
+        <h3>{{group.group_name}}</h3>
     </div>
     <div class="row">
-        <h3>{{groups.group_admin_username}}</h3>
+        <h3>{{group.group_admin_username}}</h3>
     </div>
 
-    <button class="btn btn-primary mt-4">Add Group</button>
+    {{!-- <button class="btn btn-primary mt-4">Add Group</button> --}}
     <div class="row">
-        {{#each group_members_data}}
+        {{#each groupMembers}}
         <div class="col-sm-4">
             <h3>{{this.username}}</h3>
         </div>

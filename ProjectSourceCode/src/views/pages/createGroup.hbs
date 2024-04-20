@@ -1,4 +1,6 @@
 {{> header}}
+{{> nav}}
+
 <div class="d-flex justify-content-center vh-100">
     <form id="createGroupForm">
         <div>
@@ -45,11 +47,16 @@ $(document).ready(function(){
             console.log(data);
             // If the group is successfully created, enable the rest of the form
             if (data.status === 200) {
+
                 document.querySelector('#search').disabled = false;
                 document.querySelector('#addUserButton').disabled = false;
                 document.querySelector('#createGroupForm button[type="submit"]').disabled = false;
                 document.querySelector('#confirmNameButton').disabled = true;
                 document.querySelector('#groupName').disabled = true;
+            }
+            else {
+                alert("You are already the admin of a group named " + groupName);
+                document.querySelector('#groupName').value = "";
             }
         })
         .catch((error) => {
@@ -120,7 +127,7 @@ document.querySelector('#submitButton').addEventListener('click', function(event
     .then(data => {
         if (data.status === "success") {
             alert(`Group ${groupName} was created with members ${groupMembers.join(', ')}`);
-            window.location.href = `/groups/${groupName}`;
+            window.location.href = `/group/${groupName}`;
         } else {
             alert(data.message);
         }

@@ -1,0 +1,18 @@
+<style>
+
+  .form-input { /* Base styles */ background-color: rgba(43, 43, 43, 0.5);
+  color: #C8C8C8; display: block; width: 14vw; height: 7vh; padding: 1rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0); border-radius: 13px; font-size: 1em;
+  box-sizing: border-box; margin-right: 1.5vw; /* Include padding in width */ /*
+  Focus styles */ &:focus { outline: none; /* Remove default outline */
+  border-color: #00FF94; /* Change border color on focus */ } }
+</style>
+
+<input
+  class="form-input"
+  type={{type}}
+  name={{name}}
+  placeholder={{placeholder}}
+  style={{style}}
+  required={{required}}
+/>
