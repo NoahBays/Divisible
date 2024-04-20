@@ -126,7 +126,7 @@ app.get("/home", (req, res) => {
         [req.session.user.username]
       ),
       task.any(
-        "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date",
+        "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date DESC",
         [req.session.user.username]
       ),
     ]);
@@ -230,11 +230,12 @@ app.get("/group/:group_name", async (req, res) => {
   // Multiple queries using templated strings
   const current_id = currentGroup.id;
   const currentGroupMembers = await db.manyOrNone("SELECT * FROM group_members WHERE group_id = $1", [current_id]);
+  const transactions = await db.any("SELECT * FROM transactions_group WHERE group_id = $1 ORDER BY date DESC", [current_id]);
 
   // use task to execute multiple queries
         //Checks for valid data for group_id and group_admin_username
         if (currentGroup != null) {
-          res.render("pages/group", {group: currentGroup, groupMembers: currentGroupMembers});
+          res.render("pages/group", {group: currentGroup, groupMembers: currentGroupMembers, transactions: transactions});
         } else {
           res.render("pages/login"); //would like to return home upon unsuccessful attetmpt, not implemented yet
         }

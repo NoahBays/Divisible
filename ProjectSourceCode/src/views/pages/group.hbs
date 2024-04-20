@@ -1,7 +1,6 @@
 {{> header}}
 {{> nav}}
 
-
 <div class="container">
     {{!-- <button class="btn btn-primary">Add Friend</button> --}}
     <div class="row">
@@ -24,7 +23,26 @@
     </div>
 </div>
 
-{{> footer}}
+<!--Transaction history-->
+<div class="container">
+    <div class="row">
+        <div class="row align-items-center">
+            <h2 style="text-decoration:underline">Transaction History</h2>        
+        </div>
+        <table class="table">
+            <tbody>
+                {{#each transactions}}
+                    <tr>
+                        <th>Charge: ${{this.charge_amount}}</th>
+                        <td>{{this.date}}</td>
+                        <td>{{this.charge_desc}}</td>
+                        <td>Requested by: {{this.requester_username}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {{!--
 app.get('/friends/:id', (req, res) => {
