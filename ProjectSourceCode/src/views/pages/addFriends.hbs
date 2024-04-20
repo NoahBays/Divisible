@@ -1,4 +1,4 @@
-{{> header}}
+{{!-- {{> header}}
 
 {{message}} {{!-- Friend request sent!, then displays the info of the friend who has been clicked (profile pic, , username, and name (if allowed in their settings)) --}}
 
@@ -9,7 +9,7 @@
     <p>{{friend.name}}</p>
 </div>
 
-{{> footer}}
+{{> footer}} --}}
 {{!-- Example API
 app.get('/addFriends', (req, res) => {
     const friend = {
@@ -20,3 +20,53 @@ app.get('/addFriends', (req, res) => {
     res.render('addFriends', { friend });
 });
 --}}
+
+{{> header}}
+
+<h2>Add Friends</h2>
+
+<form id="addFriendForm">
+  <label for="friendSelect">Select a friend:</label>
+  <select id="friendSelect" name="friendSelect">
+    <option value="logan">Logan</option>
+    <option value="ben">Ben</option>
+    <option value="noah">Noah</option>
+    <option value="jace">Jace</option>
+    <option value="owen">Owen</option>
+    <option value="lucca">Lucca</option>
+    <option value="pikachu">Pikachu</option>
+    <option value="oj">OJ</option>
+    <option value="him">him</option>
+  </select>
+  <button type="submit">Add Friend</button>
+</form>
+
+<!-- displaying feedback 
+<div id = "messageArea"></div>-->
+
+{{> footer}}
+
+<script>
+  document.querySelector('#addFriendForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const friendSelect = document.querySelector('#friendSelect');
+    const selectedFriend = friendSelect.options[friendSelect.selectedIndex].value;
+
+    fetch('/addFriends', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ friend: selectedFriend }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === "success") {
+        alert(`${selectedFriend} added as a friend.`);
+      } else {
+        alert(`Failed to add ${selectedFriend} as a friend.`);
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  });
+</script>
