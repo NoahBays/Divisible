@@ -1,0 +1,15 @@
+{{> header}}
+{{> nav}}
+
+<div class="center-content"></div>
+    {{! Check if the user is friends with the clicked friend }}
+    {{#if isFriend}}
+        <h1>{{friend.username}}</h1>
+        <p>Transaction Balance: {{balance}}</p>
+    {{else}}
+        <h1>{{friend.username}}</h1>
+        <button>Add Friend</button>
+    {{/if}}
+</div>
+
+{{> footer}}

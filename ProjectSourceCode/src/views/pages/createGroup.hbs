@@ -1,4 +1,6 @@
 {{> header}}
+{{> nav}}
+
 <div class="d-flex justify-content-center vh-100">
     <form id="createGroupForm">
         <div>
@@ -125,7 +127,7 @@ document.querySelector('#submitButton').addEventListener('click', function(event
     .then(data => {
         if (data.status === "success") {
             alert(`Group ${groupName} was created with members ${groupMembers.join(', ')}`);
-            window.location.href = `/groups/${groupName}`;
+            window.location.href = `/group/${groupName}`;
         } else {
             alert(data.message);
         }

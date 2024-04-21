@@ -1,10 +1,16 @@
 {{! Navbar is currently just copied over from lab 8-need to discuss some design decisions to flesh out }}
 
+<style>
+  .logo img{ width: auto; height: 2.5vh; margin-top: 0.5vh; margin-right: 1vw; }
+</style>
+
 <header>
   <nav class="navbar navbar-expand-sm border-bottom">
     <div class="container">
-      <div class="navbar-brand">
-        <img src="images/DivisibleLogo.png" alt="Divisible Logo" class="logo" />
+      <div class="logo">
+        <a href="/home">
+          <img src="images/DivisibleLogo.png" alt="Divisible Logo" />
+        </a>
       </div>
       <button
         class="navbar-toggler ms-auto"
@@ -18,17 +24,11 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbar-collapse">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/home">
-              Home
-            </a>
-          </li>
-        </ul>
         <div class="nav-item me-1">
           <a class="nav-link" href="/logout">
             Logout
           </a>
+          {{>linkButton buttonText="Logout" link="/logout"}}
         </div>
       </div>
     </div>

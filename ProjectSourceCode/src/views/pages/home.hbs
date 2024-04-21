@@ -1,3 +1,5 @@
+{{> nav}}
+
 <div class="container">
     <div class="row align-items-center">
         {{> message}}
@@ -18,6 +20,7 @@
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="../ManageAccount">Manage Account</a></li>
                 <li><a class="dropdown-item" href="../transactionHistory">Transaction History</a></li>
+                <li><a class="dropdown-item" href="../paymentWindow">Pay</a></li>
                 <li><a class="dropdown-item" href="../logout">Logout</a></li>
             </ul>
         </div>
@@ -36,7 +39,7 @@
                 <tbody>
                     <!--If user is admin in a group -->
                     <tr>
-                        <th width="20%"><a class="btn" onclick="location.href='../group'" style="font-weight:bold">{{this.group_name}}</a></th>
+                        <th width="20%"><a class="btn viewGroup" style="font-weight:bold">{{this.group_name}}</a></th>
                     </tr>
                     <tr>
                         <th>Admin: {{this.group_admin_username}}</th>
@@ -55,7 +58,7 @@
                 <tbody>    
                     <!--If user is a member in a group-->
                     <tr>
-                        <th width="20%"><a class="btn" onclick="location.href='../group'" style="font-weight:bold" >{{this.group_name}}</a></th>
+                        <th width="20%"><a class="btn viewGroup"  style="font-weight:bold" >{{this.group_name}}</a></th>
                     </tr>
                     <tr>
                         <th>Admin: {{this.group_admin_username}}</th>
@@ -85,9 +88,7 @@
                     <tr>
                         <td>
                             <!--<img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">-->
-                            <a class="btn" onclick="location.href='../ExampleFriend'">{{this.friend_username}}</a>
-                        </td>
-                        <td>
+                            <a class="btn viewUserButton">{{this.friend_username}}</a></td>                        <td>
                             {{#if this.outstanding_balance}}
                                 <h5>Outstanding balance: ${{this.outstanding_balance}}</h5>
                             {{/if}}
@@ -131,3 +132,24 @@
         </table>
     </div>
 </div>
+
+
+<script>
+$(document).ready(function(){
+    document.querySelectorAll('.viewGroup').forEach(function(button) {
+        button.addEventListener('click', function() {
+            window.location.href = '/group/' + this.innerHTML;    
+        });
+    });
+});
+
+$(document).ready(function(){
+    document.querySelectorAll('.viewUserButton').forEach(function(button) {
+        button.addEventListener('click', function() {
+            window.location.href = '/viewUser/' + this.innerHTML;    
+        });
+    });
+});
+</script>
+
+{{!-- onclick="location.href='../group'" --}}

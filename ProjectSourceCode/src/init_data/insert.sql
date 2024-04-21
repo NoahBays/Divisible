@@ -44,39 +44,39 @@ VALUES
 (4, 'Jace', 'Blood brothers');
 
 INSERT INTO group_members
-(group_id, username)
+(group_id, username, outstanding_balance)
 VALUES
-(1, 'Ben'),
-(1, 'Jace'),
-(1, 'Lucca'),
-(1, 'Owen'),
-(1, 'Logan'),
-(2, 'Lucca'),
-(2, 'Jace'),
-(2, 'Noah'),
-(3, 'Logan'),
-(3, 'Lucca'),
-(4, 'Noah'),
-(4, 'Ben');
+(1, 'Ben', 0),
+(1, 'Jace', 93),
+(1, 'Lucca', 3),
+(1, 'Owen', 55),
+(1, 'Logan', 34.21),
+(2, 'Lucca', 80.20),
+(2, 'Jace', 1),
+(2, 'Noah', 0),
+(3, 'Logan', 22),
+(3, 'Lucca', 10),
+(4, 'Noah', 2),
+(4, 'Ben', 55.66);
 
 INSERT INTO transactions_group
 (charge_amount, charge_desc, date, requester_username, group_id)
 VALUES
-(204, 'Group dinner', '10/24/23', 'Noah', 1),
-(6, 'Everyone pays 1 dollar haha', '01/24/24', 'Ben', 1),
-(169, 'Concert tickets', '08/19/23', 'Noah', 3),
-(5300, 'Road trip money', '04/04/24', 'Jace', 2);
+(204, 'Group dinner', '2023-10-24', 'Noah', 1),
+(6, 'Everyone pays 1 dollar haha', '2024-01-24', 'Ben', 1),
+(169, 'Concert tickets', '202-08-23', 'Noah', 3),
+(5300, 'Road trip money', '2024-04-04', 'Jace', 2);
 
 INSERT INTO transactions_individual
-(charge_amount, charge_desc, date, sender_username, recipient_username, group_id)
+(charge_amount, charge_desc, date, sender_username, recipient_username, group_name)
 VALUES
-(52.54, 'Groceries payback', '04/10/24', 'Noah', 'Ben', 1),
-(8.99, 'Museum', '04/17/24', 'Owen', 'Ben', 1),
-(65.46, 'Velveeta super pack', '03/23/24', 'Jace', 'Logan', 1),
-(70.73, 'Chinese food', '02/22/24', 'Logan', 'Lucca', 1),
-(3.33, 'Paper', '01/22/24', 'Logan', 'Lucca', 1),
-(33.44, 'New hat', '04/14/24', 'Ben', 'Jace', 1),
-(77.99, 'Gambling money', '01/01/24', 'Logan', 'Owen', 1),
-(12345.67, 'My life savings', '03/04/24', 'Jace', 'Lucca', 1),
-(69, ';)', '04/01/24', 'Owen', 'Jace', 1),
-(81, '54 Costco Hot Dogs', '02/21/24', 'Noah', 'Ben', 1);
+(52.54, 'Groceries payback', '2024-04-10', 'Noah', 'Ben', 'WW'),
+(8.99, 'Museum', '2024-04-17', 'Owen', 'Ben', 'WW'),
+(65.46, 'Velveeta super pack', '2024-03-24', 'Jace', 'Logan', 'WW'),
+(70.73, 'Chinese food', '2024-02-22', 'Logan', 'Lucca', 'WW'),
+(3.33, 'Paper', '2024-01-22', 'Logan', 'Lucca', 'WW'),
+(33.44, 'New hat', '2024-04-14', 'Ben', 'Jace', 'WW'),
+(77.99, 'Gambling money', '2024-01-01', 'Logan', 'Owen', 'WW'),
+(12345.67, 'My life savings', '2024-03-04', 'Jace', 'Lucca', 'WW'),
+(69, ';)', '2024-04-01', 'Owen', 'Jace', 'WW'),
+(81, '54 Costco Hot Dogs', '2024-02-21', 'Noah', 'Ben', 'WW');

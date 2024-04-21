@@ -1,7 +1,6 @@
 // *****************************************************
 // <!-- Section 1 : Import Dependencies -->
 // *****************************************************
-
 const express = require("express"); // To build an application server or API
 const app = express();
 const handlebars = require("express-handlebars");
@@ -13,10 +12,11 @@ const session = require("express-session"); // To set the session object. To sto
 const bcrypt = require("bcrypt"); //  To hash passwords
 const axios = require("axios"); // To make HTTP requests from our server. We'll learn more about it in Part C.
 
-Handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
-  return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+Handlebars.registerHelper("ifEquals", function (arg1, arg2, options) {
+  return arg1 == arg2 ? options.fn(this) : options.inverse(this);
 });
 
+Handlebars.registerPartial("registerForm", "{{> registerForm}}");
 
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
@@ -27,7 +27,7 @@ const hbs = handlebars.create({
   extname: "hbs",
   layoutsDir: __dirname + "/views/layouts",
   partialsDir: __dirname + "/views/partials",
-  imageDir: __dirname + "/public/images",
+  // imageDir: __dirname + "/public/images",
 });
 
 // database configuration
@@ -76,6 +76,14 @@ app.use(
   })
 );
 
+// Serve static image files
+app.use("/images", express.static(path.join(__dirname, "public/images")));
+
+// Serve static font files
+app.use("/fonts", express.static(path.join(__dirname, "public/fonts")));
+
+// Serve static css files
+
 // We create the user variable up here and populate it after the fact so that we can access it in /manageAccount as well as set it in /login
 let user;
 
@@ -105,72 +113,93 @@ app.get("/home", (req, res) => {
   //Find user, friendships, if user is an admin in any groups, if a member is a part of a group, all transactions related to user
   db.task("Find user, friends, admins, if in group, and all transactions", function (task) {
     return task.batch([
-      task.one("SELECT username, wallet FROM users WHERE username = $1", [req.session.user.username]), 
-      task.any("SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username", [req.session.user.username]),
-      task.any("SELECT * FROM groups WHERE group_admin_username = $1",[req.session.user.username]),
-      task.any("SELECT * FROM group_members WHERE username = $1 ORDER BY username", [req.session.user.username]),
-      task.any("SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date", [req.session.user.username])
+      task.one("SELECT username, wallet FROM users WHERE username = $1", [
+        req.session.user.username,
+      ]),
+      task.any(
+        "SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username",
+        [req.session.user.username]
+      ),
+      task.any("SELECT * FROM groups WHERE group_admin_username = $1", [
+        req.session.user.username,
+      ]),
+      task.any(
+        "SELECT * FROM group_members WHERE username = $1 ORDER BY username",
+        [req.session.user.username]
+      ),
+      task.any(
+        "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date DESC",
+        [req.session.user.username]
+      ),
     ]);
   })
-  .then(user_data => {
-    const admin_members_arr = [];
-    const not_admin_members_arr = [];
-    const not_admin_arr = [];
-    for(let i = 0; i < user_data[2].length; i++)
-    {
-      if(user_data[2])
-      {
-        //Find all group members where current user is admin of that group
-        db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[2][i].id])
-        .then(admin_members_data => {
-          for(let j = 0; j < admin_members_data.length; j++)
-          {
-            admin_members_arr.push(admin_members_data[j]);
-          }
-        })
-        .catch(err => {console.log(err);res.redirect('/login');});
+    .then((user_data) => {
+      const admin_members_arr = [];
+      const not_admin_members_arr = [];
+      const not_admin_arr = [];
+      for (let i = 0; i < user_data[2].length; i++) {
+        if (user_data[2]) {
+          db.any(
+            "SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id",
+            [user_data[2][i].id]
+          )
+            .then((admin_members_data) => {
+              for (let j = 0; j < admin_members_data.length; j++) {
+                admin_members_arr.push(admin_members_data[j]);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              res.redirect("/login");
+            });
+        }
       }
-    }
-    for(let i = 0; i < user_data[3].length; i++)
-    {
-      if(user_data[3])
-      {
-        //Find all group members where current user is a member of that group
-        db.any("SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id", [user_data[3][i].group_id])
-        .then(not_admin_members_data => {
-          for(let j = 0; j < not_admin_members_data.length; j++)
-          {
-            not_admin_members_arr.push(not_admin_members_data[j]);
-          }
-        })
-        .catch(err => {console.log(err);res.redirect('/login');});
+      for (let i = 0; i < user_data[3].length; i++) {
+        if (user_data[3]) {
+          db.any(
+            "SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id",
+            [user_data[3][i].group_id]
+          )
+            .then((not_admin_members_data) => {
+              for (let j = 0; j < not_admin_members_data.length; j++) {
+                not_admin_members_arr.push(not_admin_members_data[j]);
+                // console.log("not_admin_members_arr = ", not_admin_members_arr);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              res.redirect("/login");
+            });
+        }
       }
-    }
-    for(let i = 0; i < user_data[3].length; i++)
-    {
-      if(user_data[3])
-      {
-        //Find the admin where current user is a member of that group
-        db.any("SELECT * FROM groups WHERE id = $1", [user_data[3][i].group_id])
-        .then(not_admin_data => {
-          for(let j = 0; j < not_admin_data.length; j++)
-          {
-            not_admin_arr.push(not_admin_data[j]);
-          }
-        })
-        .catch(err => {console.log(err);res.redirect('/login');});
+      for (let i = 0; i < user_data[3].length; i++) {
+        if (user_data[3]) {
+          db.any("SELECT * FROM groups WHERE id = $1", [
+            user_data[3][i].group_id,
+          ])
+            .then((not_admin_data) => {
+              for (let j = 0; j < not_admin_data.length; j++) {
+                not_admin_arr.push(not_admin_data[j]);
+                // console.log("not_admin_arr = ", not_admin_arr);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              res.redirect("/login");
+            });
+        }
       }
-    }
-    res.render("pages/home",{
-      user: user_data[0],
-      friendships: user_data[1],
-      transactions: user_data[4],
-      admin: user_data[2],
-      admin_members: admin_members_arr,
-      not_admin: not_admin_arr,
-      not_admin_members: not_admin_members_arr,
-      message: message
-    });
+      console.log("user_data[0] = ", user_data[0]);
+      console.log("user_data[4] = ", user_data[4]);
+      res.render("pages/home", {
+        user: user_data[0],
+        friendships: user_data[1],
+        transactions: user_data[4],
+        admin: user_data[2],
+        admin_members: admin_members_arr,
+        not_admin: not_admin_arr,
+        not_admin_members: not_admin_members_arr,
+      });
     })
     .catch((err) => {console.log(err);res.redirect("/login");});
 });
@@ -200,41 +229,40 @@ console.log("parseFloat(parseFloat(req.body.money)).toFixed(2) + data.wallet = "
   .catch((err) => {console.log(err);res.redirect("/login");});
 });
 
-app.get("/group", function (req, res) {
-  // Fetch query parameters from the request object
-  var current_id = req.query.id;
-  var current_group_admin = req.query.group_admin_username;
-  var current_user = req.session.user.username; //for differing views based on whether current user is group admin or not - currently not implemented
+// viewUser
 
+app.get("/viewUser/:username", async (req, res) => {
+  const loggedInUsername = req.session.user.username;
+  const visitingUsername = req.params.username;
+  const friendship = await db.manyOrNone(
+    "SELECT * FROM friendships WHERE (user_username = $1 AND friend_username = $2) OR (user_username = $2 AND friend_username = $1)",
+    [loggedInUsername, visitingUsername]
+  );
+  const isFriend = !!friendship;
+  
+  // Fetch the user data of the visiting user
+  const visitingUser = await db.oneOrNone("SELECT * FROM users WHERE username = $1", [visitingUsername]);
+  const balanceRow = await db.oneOrNone("SELECT outstanding_balance FROM friendships WHERE user_username = $1 AND friend_username = $2", [loggedInUsername, visitingUsername]);
+  const outstanding_balance = balanceRow ? balanceRow.outstanding_balance : null;
+  res.render("pages/viewUser", { friend: visitingUser, balance: outstanding_balance, isFriend });
+});
+
+app.get("/group/:group_name", async (req, res) => {
+  // Fetch query parameters from the request object
+  const name = req.params.group_name; //for differing views based on whether current user is group admin or not - currently not implemented
+  const currentGroup = await db.oneOrNone("SELECT * FROM groups WHERE group_name = $1", [name]);
   // Multiple queries using templated strings
-  var current_id = `select * from groups where id = '${current_id}';`;
-  var current_group_admin = `select * from groups where group_admin_username = '${current_group_admin}';`;
+  const current_id = currentGroup.id;
+  const currentGroupMembers = await db.manyOrNone("SELECT * FROM group_members WHERE group_id = $1", [current_id]);
+  const transactions = await db.any("SELECT * FROM transactions_group WHERE group_id = $1 ORDER BY date DESC", [current_id]);
 
   // use task to execute multiple queries
-  db.task("get-everything", (task) => {
-    return task.batch([task.any(current_id), task.any(current_group_admin)]);
-  })
-    // if query execution succeeds
-    // query results can be obtained
-    // as shown below
-    .then((data) => {
-      db.task("Find all group members of given group", function (task) {
-        return task.any("SELECT * from group__members where group_id = $1", [
-          current_id,
-        ]);
-      }).then((group_data) => {
         //Checks for valid data for group_id and group_admin_username
-        if (data[0] && data[1]) {
-          res.render("pages/group", {
-            current_id: data[0],
-            current_group_admin: data[1],
-            group_members_data: group_data,
-          });
+        if (currentGroup != null) {
+          res.render("pages/group", {group: currentGroup, groupMembers: currentGroupMembers, transactions: transactions});
         } else {
           res.render("pages/login"); //would like to return home upon unsuccessful attetmpt, not implemented yet
         }
-      });
-    });
   // if query execution fails
   // send error message
   /*.catch(err => {
@@ -387,6 +415,38 @@ app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
 });
 
+app.post("/addFriends", async (req, res) => {
+  const { friend } = req.body;
+  const currentUser = req.session.username; 
+
+  try {
+    // Check if the friendship already exists in the friendships table
+    const friendshipExists = await db.oneOrNone(
+      "SELECT * FROM friendships WHERE user_username = $1 AND friend_username = $2",
+      [currentUser, friend]
+    );
+    if (friendshipExists) {
+      return res.json({ status: "failure", message: "Friendship already exists." });
+    }
+
+    // Insert the friendship into the friendships table
+    await db.none(
+      "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)",
+      [currentUser, friend, 0] // outstanding balance would start at 0 no one owes the other person money yet
+    );
+  
+    res.json({ status: "success", message: `${friend} added as a friend.` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: "Failed to add as a friend." });
+  }
+  
+});
+
+app.get("/paymentWindow", (req, res) => {
+  res.render("pages/paymentWindow", {});
+});
+
 // * REGISTER ENDPOINTS * //
 // GET
 app.get("/register", (req, res) => {
@@ -421,11 +481,10 @@ app.post("/register", async (req, res) => {
   var money = 0;
 
   // Create a new user
-  await db.none("INSERT INTO users (username, password, wallet) VALUES ($1, $2, $3)", [
-    req.body.username,
-    hash,
-    money
-  ]);
+  await db.none(
+    "INSERT INTO users (username, password, wallet) VALUES ($1, $2, $3)",
+    [req.body.username, hash, money]
+  );
 
   // Send a success response
   res
@@ -477,103 +536,106 @@ app.post("/login", async (req, res) => {
     res.render("pages/login", { message: "An error occurred" });
   }
 });
+app.post('/payment-individual', async (req, res) => {
+  const { chargeName, amount, senderUsername, recipientUsername, group_name, payback } = req.body;
 
-//* PAYMENT WINDOW UI ENDPOINTS *//
-function updateUserWallet(username, amount) {
-  return new Promise((resolve, reject) => {
-    db.beginTransaction((err) => {
-      if (err) reject(err);
-      const query = `UPDATE users SET wallet = wallet_balance + ? WHERE username = ?`;
-      db.query(query, [amount, username], (error, results) => {
-        if (error) {
-          return db.rollback(() => reject(error));
+  // Validate input
+  if (amount <= 0) {
+    return res.status(400).send('Invalid amount specified.');
+  }
+
+  try {
+    await db.tx(async t => {
+      const senderResult = await updateUserWallet(senderUsername, -amount, t);
+      if (!senderResult) {
+        throw new Error('Failed to update sender\'s wallet or user not found');
+      }
+
+      const recipientResult = await updateUserWallet(recipientUsername, amount, t);
+      if (!recipientResult) {
+        throw new Error('Failed to update recipient\'s wallet or user not found');
+      }
+      if (payback === 'yes') {
+        const friend_result1=await updateFriendshipBalance(senderUsername, recipientUsername, amount, t);
+        if (!friend_result1) {
+          throw new Error('Failed to update outstanding balance sender');
         }
-        db.commit((commitErr) => {
-          if (commitErr) {
-            return db.rollback(() => reject(commitErr));
-          }
-          resolve(results);
-        });
-      });
-    });
-  });
-}
-app.post("/update-wallet", async (req, res) => {
-  const { username, amount } = req.body;
-  try {
-    if (amount > 0) {
-      await updateUserWallet(username, amount);
-      res.send("Wallet updated successfully!");
-    } else {
-      res.send("Payment Requested!");
+        const friend_result2=await updateFriendshipBalance(recipientUsername, senderUsername, -amount, t);
+        if (!friend_result2) {
+          throw new Error('Failed to update outstanding balance reciever');
+        }
     }
-  } catch (error) {
-    res.status(500).send("Failed to update wallet");
-  }
-});
+      if (group_name) {
+        const groupResult = await updateGroupMemberBalance(group_name, recipientUsername, amount, t);
+        if(!groupResult){
+          throw new Error('Oustanding Balance not updated');
+        }
+      }
 
-//* PAYMENT FUNCTIONALITY ENDPOINTS *//
-app.post("/payment-individual", async (req, res) => {
-  const { chargeName, amount, senderUsername, recipientUsername, groupId } =
-    req.body;
-  // update wallet
-  await updateUserWallet(senderUsername, -amount);
-  await updateUserWallet(recipientUsername, amount);
-  if (amount < 0) {
-    chargeName += " REQUESTED";
-  }
-  // Add a record to the transaction table
-  const query = `
-      INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username, group_id)
-      VALUES (?, ?, CURRENT_DATE, ?, ?, ?)
-  `;
-  await db.query(query, [
-    amount,
-    chargeName,
-    senderUsername,
-    recipientUsername,
-    groupId,
-  ]);
-  // Redirect the user or send a response
-  res.redirect("pages/home");
-});
-app.post("/payment-group", async (req, res) => {
-  const { chargeName, amount, requesterUsername, groupId } = req.body;
-  try {
-    // Retrieve all members of the group
-    const members = await db.query(
-      "SELECT username FROM group_members WHERE group_id = ?",
-      [groupId]
-    );
-    if (members.length > 0) {
-      const splitAmount = amount / members.length; // Equal split
-      // Record the transaction for the requester
-      let transactionQuery = `
-        INSERT INTO transactions_group (charge_amount, charge_desc, date, requester_username, group_id)
-        VALUES (?, ?, CURRENT_DATE, ?, ?)
+      const transactionQuery = `
+        INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username, group_name)
+        VALUES ($1, $2, CURRENT_DATE, $3, $4, $5)
       `;
-      await db.query(transactionQuery, [
-        amount,
-        chargeName,
-        requesterUsername,
-        groupId,
-      ]);
-      // Update each member's wallet
-      // will either request money to each individual or send money to each individual within the group
-      members.forEach(async (member) => {
-        if (member.username !== requesterUsername) {
-          await updateUserWallet(member.username, -splitAmount);
-        }
-      });
-      res.redirect("pages/home");
-    } else {
-      res.status(400).send("No members found in the group.");
-    }
+      await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername, group_name || null]);
+    });
+
+    res.redirect('/home');
   } catch (error) {
-    console.error("Error processing group payment:", error);
-    res.status(500).send("Failed to process payment.");
+    console.error('Payment transaction failed:', error);
+    res.status(500).send('Failed to complete payment transaction');
   }
 });
+
+async function updateUserWallet(username, amount, transaction) {
+  const query = 'UPDATE users SET wallet = wallet + $1 WHERE username = $2 RETURNING *';
+  const res = await transaction.oneOrNone(query, [amount, username]);
+  return res;
+}
+async function updateFriendshipBalance(user_username, friend_username, amount, t) {
+  try {
+      const existingBalance = await t.oneOrNone(
+          'SELECT outstanding_balance FROM friendships WHERE user_username = $1 AND friend_username = $2',
+          [user_username, friend_username]
+      );
+      if(amount>=-existingBalance && amount>0){
+        amount=-existingBalance;
+      }
+      if(amount<=-existingBalance && amount<0){
+        amount = -existingBalance;
+      }
+
+      await t.none(
+        'UPDATE friendships SET outstanding_balance = outstanding_balance + $1 WHERE user_username = $2 AND friend_username = $3',
+        [amount, user_username, friend_username]
+         );
+
+      return { success: true };
+  } catch (error) {
+      console.error('Error updating friendship balance:', error);
+      throw error; // Rethrow the error to be handled by the caller
+  }
+}
+
+async function updateGroupMemberBalance(groupName, username, amount, t) {
+  try {
+    const groupIdResult = await t.oneOrNone('SELECT id FROM groups WHERE group_name = $1', [groupName]);
+    if (!groupIdResult) {
+      throw new Error('Group not found');
+    }
+    const groupId = groupIdResult.id;
+
+    const updateQuery = `
+      UPDATE group_members
+      SET outstanding_balance = outstanding_balance + $1
+      WHERE group_id = $2 AND username = $3
+    `;
+    await t.none(updateQuery, [amount, groupId, username]);
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating group member balance:', error);
+    throw error;
+  }
+}
 
 // * LOGOUT ENDPOINTS * //
 

@@ -1,5 +1,3 @@
-
--- Create the users table
 CREATE TABLE users (
     username VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255),
@@ -20,7 +18,7 @@ CREATE TABLE friendships (
 CREATE TABLE groups (
     id INT PRIMARY KEY,
     group_admin_username VARCHAR(255),
-    group_name VARCHAR(255),
+    group_name VARCHAR(255) UNIQUE,
     FOREIGN KEY (group_admin_username) REFERENCES users(username)
 );
 
@@ -51,7 +49,8 @@ CREATE TABLE transactions_individual(
   date VARCHAR(20),
   sender_username VARCHAR(255),
   recipient_username VARCHAR(255),
-  group_id INT,
+  group_name VARCHAR(255),
+  FOREIGN KEY (group_name) REFERENCES groups(group_name),
   FOREIGN KEY (sender_username) REFERENCES users(username),
   FOREIGN KEY (recipient_username) REFERENCES users(username)
 );
