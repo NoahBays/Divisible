@@ -502,38 +502,60 @@ app.post('/payment-individual', async (req, res) => {
         throw new Error('Password incorrect');
       }
 
-      const senderResult = await updateUserWallet(senderUsername, -amount, t);
-      if (!senderResult) {
-        throw new Error('Failed to update sender\'s wallet or user not found');
+      if(transactionType=='paying')
+      {
+        const senderResult = await updateUserWallet(senderUsername, -amount, t);
+        if (!senderResult) {
+          throw new Error('Failed to update sender\'s wallet or user not found');
+        }
+
+        const recipientResult = await updateUserWallet(recipientUsername, amount, t);
+        if (!recipientResult) {
+          throw new Error('Failed to update recipient\'s wallet or user not found');
+        }
+        if (payback === 'yes') {
+          const friend_result1=await updateFriendshipBalance(senderUsername, recipientUsername, amount, t);
+          if (!friend_result1) {
+            throw new Error('Failed to update outstanding balance sender');
+          }
+          const friend_result2=await updateFriendshipBalance(recipientUsername, senderUsername, -amount, t);
+          if (!friend_result2) {
+            throw new Error('Failed to update outstanding balance reciever');
+          }
+        }
+        if (group_name) {
+          const groupResult = await updateGroupMemberBalance(group_name, recipientUsername, amount, t);
+          if(!groupResult){
+            throw new Error('Oustanding Balance not updated');
+          }
+        }
+
+        const transactionQuery = `
+          INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username, group_name)
+          VALUES ($1, $2, CURRENT_DATE, $3, $4, $5)
+      ` ;
+        await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername, group_name || null]);
+      }
+      else{
+        // adding a request form
+        // update friendship balance
+        const friend_result1=await updateFriendshipBalance(senderUsername, recipientUsername, -amount, t);
+          if (!friend_result1) {
+            throw new Error('Failed to update outstanding balance sender');
+          }
+          const friend_result2=await updateFriendshipBalance(recipientUsername, senderUsername, amount, t);
+          if (!friend_result2) {
+            throw new Error('Failed to update outstanding balance reciever');
+          }
+          // add request to request table
+          const transactionQuery = `
+          INSERT INTO requests (charge_amount, charge_desc, date, asker_username, recipient_username, group_name)
+          VALUES ($1, $2, CURRENT_DATE, $3, $4, $5)
+      ` ;
+        await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername, group_name || null]);
       }
 
-      const recipientResult = await updateUserWallet(recipientUsername, amount, t);
-      if (!recipientResult) {
-        throw new Error('Failed to update recipient\'s wallet or user not found');
-      }
-      if (payback === 'yes') {
-        const friend_result1=await updateFriendshipBalance(senderUsername, recipientUsername, amount, t);
-        if (!friend_result1) {
-          throw new Error('Failed to update outstanding balance sender');
-        }
-        const friend_result2=await updateFriendshipBalance(recipientUsername, senderUsername, -amount, t);
-        if (!friend_result2) {
-          throw new Error('Failed to update outstanding balance reciever');
-        }
-    }
-      if (group_name) {
-        const groupResult = await updateGroupMemberBalance(group_name, recipientUsername, amount, t);
-        if(!groupResult){
-          throw new Error('Oustanding Balance not updated');
-        }
-      }
-
-      const transactionQuery = `
-        INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username, group_name)
-        VALUES ($1, $2, CURRENT_DATE, $3, $4, $5)
-      `;
-      await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername, group_name || null]);
-    });
+});
 
     res.redirect('/home');
   } catch (error) {
