@@ -391,8 +391,14 @@ app.get("/addFriends", (req, res) => {
 });
 
 app.post("/addFriends", async (req, res) => {
+  console.log(req.session); // not showing
+  console.log("testing testing");
   const { friend } = req.body;
-  const currentUser = req.session.username; 
+  const currentUser = req.session.user.username; 
+
+  if (!currentUser) { // trying to check if currentUser = null
+    res.json({ status: 401 });
+  }
 
   try {
     // Check if the friendship already exists in the friendships table
@@ -401,21 +407,26 @@ app.post("/addFriends", async (req, res) => {
       [currentUser, friend]
     );
     if (friendshipExists) {
-      return res.json({ status: "failure", message: "Friendship already exists." });
+      // friendship already exists
+      return res.json({ status: 400, message: "Friendship already exists." });
     }
 
     // Insert the friendship into the friendships table
-    await db.none(
-      "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)",
-      [currentUser, friend, 0] // outstanding balance would start at 0 no one owes the other person money yet
-    );
+    // await db.none(
+    //   "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)",
+    //   [currentUser, friend, 0] 
+    // );
+
+  const query =
+    "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)";
+  await db.none(query, [currentUser, friend, 0]);
   
-    res.json({ status: "success", message: `${friend} added as a friend.` });
+    res.json({ status: 200, message: `${friend} added as a friend.` });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ status: "error", message: "Failed to add as a friend." });
+    //res.status(500).json({ status: "error", message: "Failed to add as a friend." });
+    res.json({ status: 401 });
   }
-  
 });
 
 app.get("/paymentWindow", (req, res) => {
