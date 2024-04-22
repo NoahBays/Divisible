@@ -483,7 +483,7 @@ app.post("/login", async (req, res) => {
   }
 });
 app.post('/payment-individual', async (req, res) => {
-  const { chargeName, amount,password, senderUsername, recipientUsername, group_name, payback } = req.body;
+  const { chargeName, amount,password, senderUsername, recipientUsername, transactionType, payback } = req.body;
 
   // Validate input
   if (amount <= 0) {
@@ -523,18 +523,12 @@ app.post('/payment-individual', async (req, res) => {
             throw new Error('Failed to update outstanding balance reciever');
           }
         }
-        if (group_name) {
-          const groupResult = await updateGroupMemberBalance(group_name, recipientUsername, amount, t);
-          if(!groupResult){
-            throw new Error('Oustanding Balance not updated');
-          }
-        }
 
         const transactionQuery = `
-          INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username, group_name)
-          VALUES ($1, $2, CURRENT_DATE, $3, $4, $5)
+          INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username)
+          VALUES ($1, $2, CURRENT_DATE, $3, $4)
       ` ;
-        await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername, group_name || null]);
+        await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername]);
       }
       else{
         // adding a request form
@@ -549,10 +543,10 @@ app.post('/payment-individual', async (req, res) => {
           }
           // add request to request table
           const transactionQuery = `
-          INSERT INTO requests (charge_amount, charge_desc, date, asker_username, recipient_username, group_name)
-          VALUES ($1, $2, CURRENT_DATE, $3, $4, $5)
+          INSERT INTO requests (charge_amount, charge_desc, date, asker_username, recipient_username)
+          VALUES ($1, $2, CURRENT_DATE, $3, $4)
       ` ;
-        await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername, group_name || null]);
+        await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername]);
       }
 
 });
