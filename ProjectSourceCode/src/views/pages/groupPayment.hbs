@@ -1,64 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Payment Form</title>
-<script>
-function updateAmountRequirement() {
-    var isRequesting = document.getElementById('requesting').checked;
-    var amountInput = document.getElementById('amount');
-    var amountLabel = document.querySelector('label[for="amount"]');
-
-    if (isRequesting) {
-        amountInput.required = true;
-        amountInput.style.display = '';
-        amountLabel.style.display = '';
-    } else {
-        amountInput.required = false;
-        amountInput.style.display = 'none';
-        amountLabel.style.display = 'none';
+<style>
+    .box {
+        padding-top: 2vh;
+        padding-bottom: 2vh;
+        padding-right: 3vw;
+        padding-left: 3vw;
+        backdrop-filter: blur(35px);
+        background: rgba(12, 12, 12, 0.4);
+        box-shadow: 0px 0px 15px rgba(6, 6, 6, 0.35);
+        border-radius: 20px;
+        margin-top: 5vh;
+        margin-bottom: 5vh;
     }
-}
 
-// Initial setup when document is ready
-document.addEventListener('DOMContentLoaded', function() {
-    updateAmountRequirement(); // Ensures the form is set correctly on page load
-});
-</script>
-</head>
-<body>
-<div class="d-flex justify-content-center vh-100">
-  <div class="col-lg-4">
-    <form action="/payment-group" method="POST" class="form-payment">
-      <h1>Name of Charge</h1>
-      <input type="text" name="charge_name" class="form-control mb-3" placeholder="Enter charge name" required>
+    .sectionHeader {
+        margin-bottom: 2vh;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        column-gap: 1vw;
+    }
+</style>
 
-      <label for="username">Your Username:</label>
-      <input type="text" id="group_member" name="group_member" class="form-control mb-3" placeholder="Your Username" required autofocus>
+{{> nav}}
 
-      <label for="password">Password:</label>
-      <input type="password" id="password" name="password" class="form-control mb-3" required>
-
-      <label for="group_name">Group Name:</label>
-      <input type="text" id="group_name" name="group_name" class="form-control mb-3" placeholder="Group Name" required>
-
-      <label for="amount">Amount:</label>
-      <input type="number" id="amount" name="amount" class="form-control mb-3" placeholder="Enter Amount">
-
-      <p>Are you paying or requesting money?</p>
-      <input type="radio" id="paying" name="transactionType" value="paying" onchange="updateAmountRequirement()" required>
-      <label for="paying">Paying</label><br>
-      <input type="radio" id="requesting" name="transactionType" value="requesting" onchange="updateAmountRequirement()">
-      <label for="requesting">Requesting</label><br>
-
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Pay/Request</button>
-      
-      <p class="mt-3 text-center">
-        Can't find your group? <a href="pages/createGroup">Create Group</a>
-      </p>
-    </form>
+<div class="container">
+  <!--Welcome Text-->
+  <div class="sectionHeader" style="margin-top: 5vh;">
+      <h3>Pay Groups</h3>
   </div>
+  <!-- End Welcome Text-->
 </div>
-</body>
-</html>
 
+<div>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <title>Payment Form</title>
+  <script>
+  function updateAmountRequirement() {
+      var isRequesting = document.getElementById('requesting').checked;
+      var amountInput = document.getElementById('amount');
+      var amountLabel = document.querySelector('label[for="amount"]');
+
+      if (isRequesting) {
+          amountInput.required = true;
+          amountInput.style.display = '';
+          amountLabel.style.display = '';
+      } else {
+          amountInput.required = false;
+          amountInput.style.display = 'none';
+          amountLabel.style.display = 'none';
+      }
+  }
+
+  // Initial setup when document is ready
+  document.addEventListener('DOMContentLoaded', function() {
+      updateAmountRequirement(); // Ensures the form is set correctly on page load
+  });
+  </script>
+  </head>
+  <body>
+  <div class="d-flex justify-content-center vh-100">
+    <div class="col-lg-4">
+      <form action="/payment-group" method="POST" class="form-payment">
+        <h1>Name of Charge</h1>
+        <input type="text" name="charge_name" class="form-control mb-3" placeholder="Enter charge name" required>
+
+        <label for="username">Your Username:</label>
+        <input type="text" id="group_member" name="group_member" class="form-control mb-3" placeholder="Your Username" required autofocus>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" class="form-control mb-3" placeholder="Password" required>
+
+        <label for="group_name">Group Name:</label>
+        <input type="text" id="group_name" name="group_name" class="form-control mb-3" placeholder="Group Name" required>
+
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" class="form-control mb-3" placeholder="Enter Amount">
+
+        <p>Are you paying or requesting money?</p>
+        <input type="radio" id="paying" name="transactionType" value="paying" onchange="updateAmountRequirement()" required>
+        <label for="paying">Paying</label><br>
+        <input type="radio" id="requesting" name="transactionType" value="requesting" onchange="updateAmountRequirement()">
+        <label for="requesting">Requesting</label><br>
+
+        <button class="btn btn-lg btn-primary btn-block" type="submit" style="background-color: #00FF94; color: #0C0C0C; border-color: #00FF94;">Pay/Request</button>
+        
+        <p class="mt-3 text-center">
+          Can't find your group? <a href="pages/createGroup" style="color: #00FF94">Create Group</a>
+        </p>
+      </form>
+    </div>
+  </div>
+  </body>
+  </html>
+</div>

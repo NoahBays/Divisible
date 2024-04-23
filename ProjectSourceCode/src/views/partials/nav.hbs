@@ -1,36 +1,53 @@
-{{! Navbar is currently just copied over from lab 8-need to discuss some design decisions to flesh out }}
-
 <style>
   .logo img{ width: auto; height: 2.5vh; margin-top: 0.5vh; margin-right: 1vw; }
+
+  .navBox {
+      width: 100%;
+      padding: 15px;
+      backdrop-filter: blur(35px);
+      background: rgba(12, 12, 12, 0.4);
+    }
+
+    .contentBox {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .leftBox {
+      display: flex;
+      flex-direction: row;
+    }
+
 </style>
 
 <header>
-  <nav class="navbar navbar-expand-sm border-bottom">
+  <div class="navBox">
     <div class="container">
-      <div class="logo">
-        <a href="/home">
-          <img src="images/DivisibleLogo.png" alt="Divisible Logo" />
-        </a>
-      </div>
-      <button
-        class="navbar-toggler ms-auto"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbar-collapse"
-        aria-controls="navbar"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbar-collapse">
-        <div class="nav-item me-1">
-          <a class="nav-link" href="/logout">
-            Logout
-          </a>
-          {{>linkButton buttonText="Logout" link="/logout"}}
+      <div class="contentBox" >
+        <div class="leftBox">
+          <div class="logo">
+            <a href="/home">
+                <img src="images/DivisibleLogo.png" alt="Divisible Logo" />
+              </a>
+            </div>
+
+            <ul
+              class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
+            >
+              <li>{{>link linkText="Pay Individuals" link="/individualPayment"}}</li>
+              <li>{{>link linkText="Pay Groups" link="/groupPayment"}}</li>
+              <li>
+                  {{>link linkText="Transactions" link="/transactionHistory"}}
+              </li>
+            </ul>
         </div>
+        
+        <div style="flex-end">
+              {{>linkButton buttonText="Logout" link="/logout"}}
+            </div>
       </div>
     </div>
-  </nav>
+  </div>
 </header>
