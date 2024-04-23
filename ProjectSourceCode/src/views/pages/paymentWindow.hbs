@@ -17,6 +17,8 @@
         required
         autofocus
       />
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
 
       <label for="recipientUsername">Recipient Username:</label>
       <input
@@ -40,25 +42,12 @@
       <label for="payback">Is this a payback?</label>
         <input type="checkbox" id="payback" name="payback" value="yes">
         <small>Check if this is a payback transaction.</small>
-        
-      <label for="group_name">Group Name (optional):</label>
-      <input
-        type="text"
-        id="group_name"
-        name="group_name"
-        class="form-control mb-3"
-        placeholder="Group Name (if applicable)"
-      />
 
-
-     <!-- <label for="groupId">Group ID (optional):</label> make group name if needed
-      <input
-        type="text"
-        id="groupId"
-        name="groupId"
-        class="form-control mb-3"
-        placeholder="Group ID (if applicable)"
-      />-->
+      <p>Are you paying or requesting money?</p>
+      <input type="radio" id="paying" name="transactionType" value="paying" required>
+      <label for="paying">Paying</label><br>
+      <input type="radio" id="requesting" name="transactionType" value="requesting">
+      <label for="requesting">Requesting</label><br>
 
       <button class="btn btn-lg btn-primary btn-block" type="submit">Pay/Request</button>
       
