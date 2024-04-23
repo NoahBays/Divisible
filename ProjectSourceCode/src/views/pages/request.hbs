@@ -1,0 +1,71 @@
+{{> nav}}
+
+<div class="d-flex justify-content-center vh-100">
+  <div class="col-lg-4">
+    {{#each requests}}
+    <h1 style="text-decoration:underline">Review request</h1>
+    <form action="/request" method="POST" class="form-payment">
+
+      <label for="asker_username">Request from:</label>
+      <h5 name="asker_username">{{this.asker_username}}</h5>
+      <input
+        type="text"
+        id="asker_username"
+        name="asker_username"
+        class="form-control mb-3"
+        value="{{this.asker_username}}"
+        hidden
+      />
+
+      <label for="chargeDesc">Charge description:</label>
+      <h5 name="chargeDesc">{{this.charge_desc}}</h5>
+      <input type="text"
+        name="chargeDesc"
+        class="form-control mb-3"
+        value="{{this.charge_desc}}"
+        hidden
+      />
+
+      <label for="date">Date of request:</label>
+      <h5 name="date">{{this.date}}</h5>
+      <input
+        type="text"
+        id="date"
+        name="date"
+        class="form-control mb-3"
+        value="{{this.date}}"
+        hidden
+      />
+
+      <label for="recipient_username" hidden>Recipient Username:</label>
+      <input
+        type="text"
+        id="recipient_username"
+        name="recipient_username"
+        class="form-control mb-3"
+        value="{{this.recipient_username}}"
+        hidden
+      />
+
+      <label for="charge_amount">Amount:</label>
+      <h5 name="charge_amount">${{this.charge_amount}}</h5>
+      <input
+        type="number"
+        id="charge_amount"
+        name="charge_amount"
+        class="form-control mb-3"
+        value="{{this.charge_amount}}"
+        hidden
+      />
+
+      <p>Are you accepting or denying this request?</p>
+      <input type="radio" id="accept" name="requestApproval" value="accept" required>
+      <label for="accept">Accept</label><br>
+      <input type="radio" id="deny" name="requestApproval" value="deny" required>
+      <label for="deny">Deny</label><br>
+
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Accept/Deny</button>
+    </form>
+    {{/each}}
+  </div>
+</div>

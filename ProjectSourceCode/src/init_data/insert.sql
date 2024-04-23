@@ -60,23 +60,23 @@ VALUES
 (4, 'Ben', 0);
 
 INSERT INTO transactions_group
-(charge_amount, charge_desc, date, requester_username, group_id)
+(charge_amount, charge_name, date, requester_username, group_name, members_who_paid)
 VALUES
-(204, 'Group dinner', '2023-10-24', 'Noah', 1),
-(6, 'Everyone pays 1 dollar haha', '2024-01-24', 'Ben', 1),
-(169, 'Concert tickets', '202-08-23', 'Noah', 3),
-(5300, 'Road trip money', '2024-04-04', 'Jace', 2);
+(50, 'Group dinner', '2023-10-24', 'Noah', 'WW', '{}'),
+(1, 'Everyone pays 1 dollar haha', '2024-01-24', 'Ben', 'WW', '{}'),
+(100, 'Concert tickets', '2024-08-23', 'Noah', 'WW', '{}'),
+(1000, 'Road trip money', '2024-04-04', 'Jace', 'WW', '{}');
 
 INSERT INTO transactions_individual
-(charge_amount, charge_desc, date, sender_username, recipient_username, group_name)
+(charge_amount, charge_desc, date, sender_username, recipient_username)
 VALUES
-(52.54, 'Groceries payback', '2024-04-10', 'Noah', 'Ben', 'WW'),
-(8.99, 'Museum', '2024-04-17', 'Owen', 'Ben', 'WW'),
-(65.46, 'Velveeta super pack', '2024-03-24', 'Jace', 'Logan', 'WW'),
-(70.73, 'Chinese food', '2024-02-22', 'Logan', 'Lucca', 'WW'),
-(3.33, 'Paper', '2024-01-22', 'Logan', 'Lucca', 'WW'),
-(33.44, 'New hat', '2024-04-14', 'Ben', 'Jace', 'WW'),
-(77.99, 'Gambling money', '2024-01-01', 'Logan', 'Owen', 'WW'),
-(12345.67, 'My life savings', '2024-03-04', 'Jace', 'Lucca', 'WW'),
-(69, ';)', '2024-04-01', 'Owen', 'Jace', 'WW'),
-(81, '54 Costco Hot Dogs', '2024-02-21', 'Noah', 'Ben', 'WW');
+(52.54, 'Groceries payback', '2024-04-10', 'Noah', 'Ben'),
+(8.99, 'Museum', '2024-04-17', 'Owen', 'Ben'),
+(65.46, 'Velveeta super pack', '2024-03-24', 'Jace', 'Logan'),
+(70.73, 'Chinese food', '2024-02-22', 'Logan', 'Lucca'),
+(3.33, 'Paper', '2024-01-22', 'Logan', 'Lucca'),
+(33.44, 'New hat', '2024-04-14', 'Ben', 'Jace'),
+(77.99, 'Gambling money', '2024-01-01', 'Logan', 'Owen'),
+(12345.67, 'My life savings', '2024-03-04', 'Jace', 'Lucca'),
+(69, ';)', '2024-04-01', 'Owen', 'Jace'),
+(81, '54 Costco Hot Dogs', '2024-02-21', 'Noah', 'Ben');

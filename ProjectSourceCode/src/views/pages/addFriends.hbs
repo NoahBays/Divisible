@@ -28,15 +28,17 @@ app.get('/addFriends', (req, res) => {
 <form id="addFriendForm">
   <label for="friendSelect">Select a friend:</label>
   <select id="friendSelect" name="friendSelect">
-    <option value="logan">Logan</option>
-    <option value="ben">Ben</option>
-    <option value="noah">Noah</option>
-    <option value="jace">Jace</option>
-    <option value="owen">Owen</option>
-    <option value="lucca">Lucca</option>
-    <option value="pikachu">Pikachu</option>
-    <option value="oj">OJ</option>
-    <option value="him">him</option>
+    <option value="Logan">Logan</option>
+    <option value="Ben">Ben</option>
+    <option value="Noah">Noah</option>
+    <option value="Jace">Jace</option>
+    <option value="Owen">Owen</option>
+    <option value="Lucca">Lucca</option>
+    <option value="Jackson">Jackson</option>
+    <option value="Joey">Joey</option>
+    <option value="Cody">Cody</option>
+    <option value="Bryce">Bryce</option>
+    <option value="Josh">Josh</option>
   </select>
   <button type="submit">Add Friend</button>
 </form>
@@ -64,7 +66,8 @@ app.get('/addFriends', (req, res) => {
       if (data.status === "success") {
         alert(`${selectedFriend} added as a friend.`);
       } else {
-        alert(`Failed to add ${selectedFriend} as a friend.`);
+        alert(data.message);
+        //alert(`Failed to add ${selectedFriend} as a friend.`); // error that keeps on appearing
       }
     })
     .catch(error => console.error('Error:', error));
