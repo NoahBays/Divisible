@@ -4,17 +4,17 @@
 <div class="container">
     {{!-- <button class="btn btn-primary">Add Friend</button> --}}
     <div class="row">
-        <label for="title" style="margin-right:10"><h3>Group name:</h3></label>
+        <label for="title" style="margin-right:10; text-decoration:underline"><h3>Group name:</h3></label>
         <h3 name="title">{{group.group_name}}</h3>
     </div>
     <div class="row">
-        <label for="admin" style="margin-right:10"><h3>Group admin:</h3></label>        
+        <label for="admin" style="margin-right:10; text-decoration:underline"><h3>Group admin:</h3></label>        
         <h3 name="admin">{{group.group_admin_username}}</h3>
     </div>
 
     {{!-- <button class="btn btn-primary mt-4">Add Group</button> --}}
     <div class="row">
-        <h3 style="margin-right:10">Group members & outstanding balances:</h3>     
+        <h3 style="margin-right:10; text-decoration:underline">Group members & outstanding balances:</h3>     
     </div>
     <div class="row">
         {{#each groupMembers}}
