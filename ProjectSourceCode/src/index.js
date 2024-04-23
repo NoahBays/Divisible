@@ -108,8 +108,10 @@ app.get("/", (req, res) => {
 // Home
 // GET
 app.get("/home", (req, res) => {
-  //Find user, friendships, if user is an admin in any groups, members user is a part of
-  db.task("Find user, friends, admins, and group members", function (task) {
+  message = req.session.message;
+  req.session.message = null;
+  //Find user, friendships, if user is an admin in any groups, if a member is a part of a group, all transactions related to user
+  db.task("Find user, friends, admins, if in group, and all transactions", function (task) {
     return task.batch([
       task.one("SELECT username, wallet FROM users WHERE username = $1", [
         req.session.user.username,
@@ -126,7 +128,7 @@ app.get("/home", (req, res) => {
         [req.session.user.username]
       ),
       task.any(
-        "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date",
+        "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date DESC",
         [req.session.user.username]
       ),
     ]);
@@ -199,10 +201,32 @@ app.get("/home", (req, res) => {
         not_admin_members: not_admin_members_arr,
       });
     })
-    .catch((err) => {
-      console.log(err);
-      res.redirect("/login");
+    .catch((err) => {console.log(err);res.redirect("/login");});
+});
+
+app.get("/addMoney", (req, res) => {
+  db.one("SELECT * FROM users WHERE username = $1", [req.session.user.username])
+  .then(data => {
+    res.render("pages/addMoney", {
+      user: data
     });
+  })
+  .catch((err) => {console.log(err);res.redirect("/login");});
+});
+
+app.post("/addMoney", (req, res) => {
+  db.one("SELECT wallet FROM users WHERE username = $1", [req.session.user.username])
+  .then(data => {
+console.log("parseFloat(parseFloat(req.body.money)).toFixed(2) + data.wallet = ", parseFloat(parseFloat(req.body.money).toFixed(2)) + data.wallet);
+    db.none("UPDATE users SET wallet = $1 WHERE username = $2", [parseFloat(parseFloat(req.body.money).toFixed(2))   + data.wallet, req.session.user.username])
+    .then(data2 => {
+      req.session.message = "Money added successfully.";
+
+      res.redirect("/home");
+    })
+    .catch((err) => {console.log(err);res.redirect("/login");});
+  })
+  .catch((err) => {console.log(err);res.redirect("/login");});
 });
 
 // viewUser
@@ -230,11 +254,12 @@ app.get("/group/:group_name", async (req, res) => {
   // Multiple queries using templated strings
   const current_id = currentGroup.id;
   const currentGroupMembers = await db.manyOrNone("SELECT * FROM group_members WHERE group_id = $1", [current_id]);
+  const transactions = await db.any("SELECT * FROM transactions_group WHERE group_id = $1 ORDER BY date DESC", [current_id]);
 
   // use task to execute multiple queries
         //Checks for valid data for group_id and group_admin_username
         if (currentGroup != null) {
-          res.render("pages/group", {group: currentGroup, groupMembers: currentGroupMembers});
+          res.render("pages/group", {group: currentGroup, groupMembers: currentGroupMembers, transactions: transactions});
         } else {
           res.render("pages/login"); //would like to return home upon unsuccessful attetmpt, not implemented yet
         }
@@ -389,6 +414,46 @@ app.post("/addGroupMembers", async (req, res) => {
 app.get("/addFriends", (req, res) => {
   res.render("pages/addFriends", {});
 });
+
+app.post("/addFriends", async (req, res) => {
+  console.log(req.session); // not showing
+  console.log("testing testing");
+  const { friend } = req.body;
+  const currentUser = req.session.user.username; 
+
+  if (!currentUser) { // trying to check if currentUser = null
+    res.json({ status: 401 });
+  }
+
+  try {
+    // Check if the friendship already exists in the friendships table
+    const friendshipExists = await db.oneOrNone(
+      "SELECT * FROM friendships WHERE user_username = $1 AND friend_username = $2",
+      [currentUser, friend]
+    );
+    if (friendshipExists) {
+      // friendship already exists
+      return res.json({ status: 400, message: "Friendship already exists." });
+    }
+
+    // Insert the friendship into the friendships table
+    // await db.none(
+    //   "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)",
+    //   [currentUser, friend, 0] 
+    // );
+
+  const query =
+    "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)";
+  await db.none(query, [currentUser, friend, 0]);
+  
+    res.json({ status: 200, message: `${friend} added as a friend.` });
+  } catch (error) {
+    console.error(error);
+    //res.status(500).json({ status: "error", message: "Failed to add as a friend." });
+    res.json({ status: 401 });
+  }
+});
+
 app.get("/paymentWindow", (req, res) => {
   res.render("pages/paymentWindow", {});
 });

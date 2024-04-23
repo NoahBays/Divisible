@@ -44,20 +44,20 @@ VALUES
 (4, 'Jace', 'Blood brothers');
 
 INSERT INTO group_members
-(group_id, username)
+(group_id, username, outstanding_balance)
 VALUES
-(1, 'Ben'),
-(1, 'Jace'),
-(1, 'Lucca'),
-(1, 'Owen'),
-(1, 'Logan'),
-(2, 'Lucca'),
-(2, 'Jace'),
-(2, 'Noah'),
-(3, 'Logan'),
-(3, 'Lucca'),
-(4, 'Noah'),
-(4, 'Ben');
+(1, 'Ben', 0),
+(1, 'Jace', 93),
+(1, 'Lucca', 3),
+(1, 'Owen', 55),
+(1, 'Logan', 34.21),
+(2, 'Lucca', 80.20),
+(2, 'Jace', 1),
+(2, 'Noah', 0),
+(3, 'Logan', 22),
+(3, 'Lucca', 10),
+(4, 'Noah', 2),
+(4, 'Ben', 55.66);
 
 INSERT INTO transactions_group
 (charge_amount, charge_name, date, requester_username, group_name, members_who_paid)

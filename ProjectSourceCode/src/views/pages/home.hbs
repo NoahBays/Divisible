@@ -2,8 +2,12 @@
 
 <div class="container">
     <div class="row align-items-center">
-        <div class="col-8">
+        {{> message}}
+    </div>
+    <div class="row align-items-center">
+        <div class="row align-items-center col-8">
             <h3>Welcome {{user.username}}, your current balance is: ${{user.wallet}}</h3>
+            <button type="submit" class="btn btn-primary" style="margin: 1em" width="1%" onclick="location.href = ('../addMoney')">Add $$$</button>
         </div>
         <div class="col-4 text-center">
             <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 1em">Notifications</button>
