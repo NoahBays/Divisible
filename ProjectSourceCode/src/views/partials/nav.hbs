@@ -1,41 +1,52 @@
 <style>
   .logo img{ width: auto; height: 2.5vh; margin-top: 0.5vh; margin-right: 1vw; }
 
-  .box {
+  .navBox {
       width: 100%;
-      display: inline-block;
       padding: 15px;
       backdrop-filter: blur(35px);
       background: rgba(12, 12, 12, 0.4);
-      box-sizing: border-box;
     }
+
+    .contentBox {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .leftBox {
+      display: flex;
+      flex-direction: row;
+    }
+
 </style>
 
 <header>
-  <div class="box" >
+  <div class="navBox">
     <div class="container">
-    <div
-      class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
-    >
-      <div class="logo">
-        <a href="/home">
-          <img src="images/DivisibleLogo.png" alt="Divisible Logo" />
-        </a>
-      </div>
+      <div class="contentBox" >
+        <div class="leftBox">
+          <div class="logo">
+            <a href="/home">
+                <img src="images/DivisibleLogo.png" alt="Divisible Logo" />
+              </a>
+            </div>
 
-      <ul
-        class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
-      >
-        <li>{{>link linkText="Pay" link="/paymentWindow"}}</li>
-        <li>
-            {{>link linkText="Transactions" link="/transactionHistory"}}
-        </li>
-      </ul>
-
-      <div class="dropdown text-end">
-        {{>linkButton buttonText="Logout" link="/logout"}}
+            <ul
+              class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
+            >
+              <li>{{>link linkText="Pay" link="/paymentWindow"}}</li>
+              <li>
+                  {{>link linkText="Transactions" link="/transactionHistory"}}
+              </li>
+            </ul>
+        </div>
+        
+        <div style="flex-end">
+              {{>linkButton buttonText="Logout" link="/logout"}}
+            </div>
       </div>
     </div>
-  </div>
   </div>
 </header>
