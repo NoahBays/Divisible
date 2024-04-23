@@ -25,7 +25,7 @@
 <div>
     <!--Welcome Text-->
     <div class="sectionHeader" style="margin-top: 5vh;">
-        <h3>Welcome {{user.username}}, your current balance is <span style="color: #00FF94">${{user.wallet}}</span></h3>
+        <h3>Hi {{user.username}}, your current balance is <span style="color: #00FF94">${{user.wallet}}</span></h3>
         {{> linkButton buttonText="Add Money" link="/addMoney"}}
     </div>
     <!-- End Welcome Text-->
@@ -44,7 +44,7 @@
                     <tbody>
                         <!--If user is admin in a group -->
                         <tr>
-                            <th width="20%"><a class="btn viewGroup" style="font-weight:bold">{{this.group_name}}</a></th>
+                            <th width="20%"><a class="btn viewGroup" style="font-weight:bold; color: #f5f5f5;">{{this.group_name}}</a></th>
                         </tr>
                         <tr>
                             <th>Admin: {{this.group_admin_username}}</th>
@@ -63,7 +63,7 @@
                     <tbody>    
                         <!--If user is a member in a group-->
                         <tr>
-                            <th width="20%"><a class="btn viewGroup"  style="font-weight:bold" >{{this.group_name}}</a></th>
+                            <th width="20%"><a class="btn viewGroup"  style="font-weight:bold; color: #f5f5f5;" >{{this.group_name}}</a></th>
                         </tr>
                         <tr>
                             <th>Admin: {{this.group_admin_username}}</th>
@@ -96,7 +96,7 @@
                         <tr>
                             <td>
                                 <!--<img src="{{this.image}}" alt="{{this.name}}" class="img-thumbnail">-->
-                                <a class="btn viewUserButton">{{this.friend_username}}</a></td>                        
+                                <a class="btn viewUserButton" style="color: #f5f5f5;">{{this.friend_username}}</a></td>                        
                                 <td>
                                 {{#if this.outstanding_balance}}
                                     <h5>Outstanding balance: ${{this.outstanding_balance}}</h5>
