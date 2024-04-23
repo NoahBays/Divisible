@@ -27,6 +27,24 @@
     <div class="sectionHeader" style="margin-top: 5vh;">
         <h3>Hi {{user.username}}, your current balance is <span style="color: #00FF94">${{user.wallet}}</span></h3>
         {{> linkButton buttonText="Add Money" link="/addMoney"}}
+        {{#if request}}
+            <button class="btn btn-danger" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #FFFF94; box-sizing: border-box; display: inline-block; padding: 1rem 1rem; width: auto; height: auto; border: 1px solid rgba(0, 0, 0, 0); border-radius: 13px; font-size: 1em; line-height: 0.75em; text-decoration: none; color: #0C0C0C; text-decoration: none; text-align: center;">
+                Requests ({{request_number}})
+            </button>
+            <ul class="dropdown-menu" style="background-color: #FFFF94">
+                {{#each request}}
+                    <label for="request"></label>
+                    <li style="background-color: #FFFF94"><a class="dropdown-item btn viewRequest" name="request" style="background-color: #FFFF94">{{this.asker_username}}</a></li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <button class="btn btn-secondary btn-outline" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #00FF94; box-sizing: border-box; display: inline-block; padding: 1rem 1rem; width: auto; height: auto; border: 1px solid rgba(0, 0, 0, 0); border-radius: 13px; font-size: 1em; line-height: 0.75em; text-decoration: none; color: #0C0C0C; text-decoration: none; text-align: center;">
+                Requests
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item">No requests.</a></li>
+            </ul>
+        {{/if}}
     </div>
     <!-- End Welcome Text-->
 

@@ -62,27 +62,27 @@ VALUES
 (2, 'Noah', 0),
 (3, 'Logan', 22),
 (3, 'Lucca', 10),
-(4, 'Noah', 2),
-(4, 'Ben', 55.66);
+(4, 'Noah', 0),
+(4, 'Ben', 0);
 
 INSERT INTO transactions_group
 (charge_amount, charge_name, date, requester_username, group_name, members_who_paid)
 VALUES
-(50, 'Group dinner', '10/24/23', 'Noah', 'WW', '{}'),
-(1, 'Everyone pays 1 dollar haha', '01/24/24', 'Ben', 'WW', '{}'),
-(100, 'Concert tickets', '08/19/23', 'Noah', 'WW', '{}'),
-(1000, 'Road trip money', '04/04/24', 'Jace', 'WW', '{}');
+(50, 'Group dinner', '2023-10-24', 'Noah', 'WW', '{}'),
+(1, 'Everyone pays 1 dollar haha', '2024-01-24', 'Ben', 'WW', '{}'),
+(100, 'Concert tickets', '2024-08-23', 'Noah', 'WW', '{}'),
+(1000, 'Road trip money', '2024-04-04', 'Jace', 'WW', '{}');
 
 INSERT INTO transactions_individual
 (charge_amount, charge_desc, date, sender_username, recipient_username)
 VALUES
-(52.54, 'Groceries payback', '04/10/24', 'Noah', 'Ben'),
-(8.99, 'Museum', '04/17/24', 'Owen', 'Ben'),
-(65.46, 'Velveeta super pack', '03/23/24', 'Jace', 'Logan'),
-(70.73, 'Chinese food', '02/22/24', 'Logan', 'Lucca'),
-(3.33, 'Paper', '01/22/24', 'Logan', 'Lucca'),
-(33.44, 'New hat', '04/14/24', 'Ben', 'Jace'),
-(77.99, 'Gambling money', '01/01/24', 'Logan', 'Owen'),
-(12345.67, 'My life savings', '03/04/24', 'Jace', 'Lucca'),
-(69, ';)', '04/01/24', 'Owen', 'Jace'),
-(81, '54 Costco Hot Dogs', '02/21/24', 'Noah', 'Ben');
+(52.54, 'Groceries payback', '2024-04-10', 'Noah', 'Ben'),
+(8.99, 'Museum', '2024-04-17', 'Owen', 'Ben'),
+(65.46, 'Velveeta super pack', '2024-03-24', 'Jace', 'Logan'),
+(70.73, 'Chinese food', '2024-02-22', 'Logan', 'Lucca'),
+(3.33, 'Paper', '2024-01-22', 'Logan', 'Lucca'),
+(33.44, 'New hat', '2024-04-14', 'Ben', 'Jace'),
+(77.99, 'Gambling money', '2024-01-01', 'Logan', 'Owen'),
+(12345.67, 'My life savings', '2024-03-04', 'Jace', 'Lucca'),
+(69, ';)', '2024-04-01', 'Owen', 'Jace'),
+(81, '54 Costco Hot Dogs', '2024-02-21', 'Noah', 'Ben');

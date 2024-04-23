@@ -25,4 +25,12 @@ $(document).ready(function(){
         });
     });
 });
+
+$(document).ready(function(){
+    document.querySelectorAll('.viewRequest').forEach(function(button) {
+        button.addEventListener('click', function() {
+            window.location.href = '/request/' + this.innerHTML;    
+        });
+    });
+});
 </script>
