@@ -56,8 +56,8 @@ VALUES
 (2, 'Noah', 0),
 (3, 'Logan', 22),
 (3, 'Lucca', 10),
-(4, 'Noah', 2),
-(4, 'Ben', 55.66);
+(4, 'Noah', 0),
+(4, 'Ben', 0);
 
 INSERT INTO transactions_group
 (charge_amount, charge_desc, date, requester_username, group_id)
