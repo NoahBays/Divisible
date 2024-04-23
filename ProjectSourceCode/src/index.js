@@ -304,8 +304,8 @@ app.get("/group/:group_name", async (req, res) => {
     [current_id]
   );
   const transactions = await db.any(
-    "SELECT * FROM transactions_group WHERE group_id = $1 ORDER BY date DESC",
-    [current_id]
+    "SELECT * FROM transactions_group WHERE group_name = $1 ORDER BY date DESC",
+    [name]
   );
 
   // use task to execute multiple queries
