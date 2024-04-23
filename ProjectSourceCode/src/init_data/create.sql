@@ -35,11 +35,12 @@ CREATE TABLE group_members (
 --Create transaction table
 CREATE TABLE transactions_group(
   charge_amount FLOAT,
-  charge_desc CHAR(50),
+  charge_name CHAR(50),
   date VARCHAR(20),
   requester_username VARCHAR(255),
-  group_id INT,
-  FOREIGN KEY (group_id) REFERENCES groups(id),
+  group_name VARCHAR(255),
+  members_who_paid VARCHAR(255) [],
+  FOREIGN KEY (group_name) REFERENCES groups(group_name),
   FOREIGN KEY (requester_username) REFERENCES users(username)
 );
 
@@ -49,8 +50,15 @@ CREATE TABLE transactions_individual(
   date VARCHAR(20),
   sender_username VARCHAR(255),
   recipient_username VARCHAR(255),
-  group_name VARCHAR(255),
-  FOREIGN KEY (group_name) REFERENCES groups(group_name),
   FOREIGN KEY (sender_username) REFERENCES users(username),
+  FOREIGN KEY (recipient_username) REFERENCES users(username)
+);
+CREATE TABLE requests(
+  charge_amount FLOAT,
+  charge_desc CHAR(50),
+  date VARCHAR(20),
+  asker_username VARCHAR(255),
+  recipient_username VARCHAR(255),
+  FOREIGN KEY (asker_username) REFERENCES users(username),
   FOREIGN KEY (recipient_username) REFERENCES users(username)
 );

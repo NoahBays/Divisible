@@ -1,30 +1,53 @@
 {{> header}}
 {{> nav}}
 
-
 <div class="container">
     {{!-- <button class="btn btn-primary">Add Friend</button> --}}
     <div class="row">
-        <h3>{{group.group_name}}</h3>
+        <label for="title" style="margin-right:10"><h3>Group name:</h3></label>
+        <h3 name="title">{{group.group_name}}</h3>
     </div>
     <div class="row">
-        <h3>{{group.group_admin_username}}</h3>
+        <label for="admin" style="margin-right:10"><h3>Group admin:</h3></label>        
+        <h3 name="admin">{{group.group_admin_username}}</h3>
     </div>
 
     {{!-- <button class="btn btn-primary mt-4">Add Group</button> --}}
     <div class="row">
+        <h3 style="margin-right:10">Group members & outstanding balances:</h3>     
+    </div>
+    <div class="row">
         {{#each groupMembers}}
-        <div class="col-sm-4">
+        <div class="col-2">
             <h3>{{this.username}}</h3>
         </div>
-        <div class="row">
-            <h3>{{this.outstanding_balance}}</h3>
+        <div class="col-2">
+            <h3>${{this.outstanding_balance}}</h3>
         </div>
         {{/each}}
     </div>
 </div>
 
-{{> footer}}
+<!--Transaction history-->
+<div class="container">
+    <div class="row">
+        <div class="row align-items-center">
+            <h2 style="text-decoration:underline">Transaction History</h2>        
+        </div>
+        <table class="table">
+            <tbody>
+                {{#each transactions}}
+                    <tr>
+                        <th>Charge: ${{this.charge_amount}}</th>
+                        <td>{{this.date}}</td>
+                        <td>{{this.charge_desc}}</td>
+                        <td>Requested by: {{this.requester_username}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {{!--
 app.get('/friends/:id', (req, res) => {
