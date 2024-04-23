@@ -391,8 +391,8 @@ app.get("/addFriends", (req, res) => {
 });
 
 app.post("/addFriends", async (req, res) => {
-  console.log(req.session); // not showing
-  console.log("testing testing");
+  //console.log(req.session); // not showing
+  //console.log("testing testing");
   const { friend } = req.body;
   const currentUser = req.session.user.username; 
 
