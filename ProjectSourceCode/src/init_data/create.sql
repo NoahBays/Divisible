@@ -1,6 +1,8 @@
 CREATE TABLE users (
     username VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255),
+    email VARCHAR(255),
+    profile_picture_url VARCHAR(255),
     wallet FLOAT
 );
 
