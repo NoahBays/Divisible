@@ -411,11 +411,9 @@ app.post("/addFriends", async (req, res) => {
       return res.json({ status: 400, message: "Friendship already exists." });
     }
 
-    // Insert the friendship into the friendships table
-    // await db.none(
-    //   "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)",
-    //   [currentUser, friend, 0] 
-    // );
+    if (currentUser == friend) {
+      return res.json({ status: 400, message: 'Failed to add as a friend.' });
+    }
 
   const query =
     "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)";
