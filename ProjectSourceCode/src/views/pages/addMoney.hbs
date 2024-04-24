@@ -1,0 +1,13 @@
+{{>nav}}
+<div class="container">
+    <div class="row align-items-center">
+        <h3>Your current balance is: ${{user.wallet}}</h3>
+    </div>
+    <div class="row align-items-center">
+        <form action="/addMoney" method="POST">
+            <label for="money">Insert amount here:</label>
+            <input id="money" name="money" class="form-control mb-3" required/>
+            <button type="submit" class="btn btn-success">Add Money</button>
+        </form>
+    </div>
+</div>
