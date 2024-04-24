@@ -3,6 +3,8 @@
 // *****************************************************
 const express = require("express"); // To build an application server or API
 const app = express();
+app.use(express.static('public'));
+
 const handlebars = require("express-handlebars");
 const Handlebars = require("handlebars");
 const path = require("path");
@@ -276,6 +278,7 @@ app.get("/viewUser/:username", async (req, res) => {
     "SELECT * FROM users WHERE username = $1",
     [visitingUsername]
   );
+
   const balanceRow = await db.oneOrNone(
     "SELECT outstanding_balance FROM friendships WHERE user_username = $1 AND friend_username = $2",
     [loggedInUsername, visitingUsername]
