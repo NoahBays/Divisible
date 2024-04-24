@@ -626,7 +626,6 @@ async function processGroupPayback(t, group_name, group_member, charge_name, id)
         `, [group_name, group_member, charge_name]);
         
         if (!outstanding_group) {
-          // If no records are found, it means all dues are paid by the user
           console.log('User has paid all their groups');
           return;
         }
@@ -645,20 +644,6 @@ async function processGroupPayback(t, group_name, group_member, charge_name, id)
       SET outstanding_balance = outstanding_balance - $1
       WHERE username = $2 AND group_id = $3
   `, [outstanding_group.charge_amount, group_member, id]);
-}
-
-
-
-async function updateUserWallet(username, amount, transaction) {
-  const query = 'UPDATE users SET wallet = wallet + $1 WHERE username = $2 RETURNING *';
-  const res = await transaction.oneOrNone(query, [amount, username]);
-  return res;
-}
-
-async function updateUserWallet(username, amount, transaction) {
-  const query = 'UPDATE users SET wallet = wallet + $1 WHERE username = $2 RETURNING *';
-  const res = await transaction.oneOrNone(query, [amount, username]);
-  return res;
 }
 async function updateFriendshipBalance(user_username, friend_username, amount, t) {
   try {
@@ -681,8 +666,13 @@ async function updateFriendshipBalance(user_username, friend_username, amount, t
       return { success: true };
   } catch (error) {
       console.error('Error updating friendship balance:', error);
-      throw error; // Rethrow the error to be handled by the caller
+      throw error;
   }
+}
+async function updateUserWallet(username, amount, transaction) {
+  const query = 'UPDATE users SET wallet = wallet + $1 WHERE username = $2 RETURNING *';
+  const res = await transaction.oneOrNone(query, [amount, username]);
+  return res;
 }
 
 async function updateGroupMemberBalance(requesterUsername, amount, id, t) {
