@@ -34,12 +34,14 @@ CREATE TABLE group_members (
 
 --Create transaction table
 CREATE TABLE transactions_group(
+  group_id INT,
   charge_amount FLOAT,
   charge_name CHAR(50),
   date VARCHAR(20),
   requester_username VARCHAR(255),
   group_name VARCHAR(255),
   members_who_paid VARCHAR(255) [],
+  FOREIGN KEY (group_id) REFERENCES groups(id),
   FOREIGN KEY (group_name) REFERENCES groups(group_name),
   FOREIGN KEY (requester_username) REFERENCES users(username)
 );

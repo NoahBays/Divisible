@@ -48,7 +48,7 @@ INSERT INTO group_members
 VALUES
 (1, 'Ben', 0),
 (1, 'Jace', 93),
-(1, 'Lucca', 3),
+(1, 'Lucca', 300),
 (1, 'Owen', 55),
 (1, 'Logan', 34.21),
 (2, 'Lucca', 80.20),
@@ -60,12 +60,12 @@ VALUES
 (4, 'Ben', 55.66);
 
 INSERT INTO transactions_group
-(charge_amount, charge_name, date, requester_username, group_name, members_who_paid)
+(group_id, charge_amount, charge_name, date, requester_username, group_name, members_who_paid)
 VALUES
-(50, 'Group dinner', '10/24/23', 'Noah', 'WW', '{}'),
-(1, 'Everyone pays 1 dollar haha', '01/24/24', 'Ben', 'WW', '{}'),
-(100, 'Concert tickets', '08/19/23', 'Noah', 'WW', '{}'),
-(1000, 'Road trip money', '04/04/24', 'Jace', 'WW', '{}');
+(1, 50, 'Group dinner', '10/24/23', 'Noah', 'WW', '{}'),
+(1, 1, 'Everyone pays 1 dollar haha', '01/24/24', 'Ben', 'WW', '{}'),
+(1, 100, 'Concert tickets', '08/19/23', 'Noah', 'WW', '{}'),
+(1, 1000, 'Road trip money', '04/04/24', 'Jace', 'WW', '{}');
 
 INSERT INTO transactions_individual
 (charge_amount, charge_desc, date, sender_username, recipient_username)

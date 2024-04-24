@@ -653,7 +653,7 @@ app.post('/payment-group', async (req, res) => {
       
       if(transactionType=='paying')
       {
-        await processGroupPayback(t, group_name, group_member, charge_name, group_id.id);
+        await processGroupPayback(group_name, group_member, charge_name, group_id.id, t);
       }
       else{
         // Validate input
@@ -667,10 +667,10 @@ app.post('/payment-group', async (req, res) => {
 
         // Insert transaction into group transaction table
         const transactionQuery = `
-            INSERT INTO transactions_group (charge_amount, charge_name, date, requester_username, group_name)
-            VALUES ($1, $2, CURRENT_DATE, $3, $4)
+            INSERT INTO transactions_group (group_id, charge_amount, charge_name, date, requester_username, group_name)
+            VALUES ($1, $2,$3, CURRENT_DATE, $4, $5)
         `;
-        await t.none(transactionQuery, [amount, charge_name, group_member, group_name]);
+        await t.none(transactionQuery, [group_id.id, amount, charge_name, group_member, group_name]);
       }
 
 });
@@ -682,18 +682,22 @@ app.post('/payment-group', async (req, res) => {
   }
 });
 
-async function processGroupPayback(t, group_name, group_member, charge_name, id) {
-  const outstanding_group = await t.oneOrNone(`
+async function processGroupPayback(group_name, group_member, charge_name, id, t) {
+  const outstanding_group = await t.manyOrNone(`
           SELECT charge_amount, requester_username
           FROM transactions_group
           WHERE group_name = $1 AND NOT ($2 = ANY(members_who_paid)) AND charge_name = $3
-          LIMIT 1
+          Limit 1
         `, [group_name, group_member, charge_name]);
         
         if (!outstanding_group) {
           console.log('User has paid all their groups');
           return;
         }
+        else{
+          console.log(outstanding_group);
+          console.log(outstanding_group[0].charge_amount);
+          console.log(group_member);
 
       await t.none(`
           UPDATE transactions_group
@@ -701,14 +705,15 @@ async function processGroupPayback(t, group_name, group_member, charge_name, id)
           WHERE charge_name = $2
            `, [group_member, charge_name]);
 
-      await updateUserWallet(t, group_member, -outstanding_group.charge_amount);
-      await updateUserWallet(t, outstanding_group.requester_username, outstanding_group.charge_amount);
+      await updateUserWallet(group_member, -outstanding_group[0].charge_amount,t);
+      await updateUserWallet(outstanding_group[0].requester_username, outstanding_group[0].charge_amount, t);
       
   await t.none(`
       UPDATE group_members
       SET outstanding_balance = outstanding_balance - $1
       WHERE username = $2 AND group_id = $3
-  `, [outstanding_group.charge_amount, group_member, id]);
+  `, [outstanding_group[0].charge_amount, group_member, id]);
+        }
 }
 async function updateFriendshipBalance(user_username, friend_username, amount, t) {
   try {
@@ -736,7 +741,7 @@ async function updateFriendshipBalance(user_username, friend_username, amount, t
 }
 async function updateUserWallet(username, amount, transaction) {
   const query = 'UPDATE users SET wallet = wallet + $1 WHERE username = $2 RETURNING *';
-  const res = await transaction.oneOrNone(query, [amount, username]);
+  const res = await transaction.one(query, [amount, username]);
   return res;
 }
 
