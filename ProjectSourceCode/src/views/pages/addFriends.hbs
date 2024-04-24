@@ -1,5 +1,4 @@
-{{> header}}
-{{> nav}}
+{{!-- {{> header}}
 
 {{message}} {{!-- Friend request sent!, then displays the info of the friend who has been clicked (profile pic, , username, and name (if allowed in their settings)) --}}
 
@@ -10,4 +9,67 @@
     <p>{{friend.name}}</p>
 </div>
 
+{{> footer}} --}}
+{{!-- Example API
+app.get('/addFriends', (req, res) => {
+    const friend = {
+        username: 'friend1',
+        name: 'Friend One',
+        image: '/path/to/image.jpg',
+    };
+    res.render('addFriends', { friend });
+});
+--}}
+
+{{> header}}
+
+<h2>Add Friends</h2>
+
+<form id="addFriendForm">
+  <label for="friendSelect">Select a friend:</label>
+  <select id="friendSelect" name="friendSelect">
+    <option value="Logan">Logan</option>
+    <option value="Ben">Ben</option>
+    <option value="Noah">Noah</option>
+    <option value="Jace">Jace</option>
+    <option value="Owen">Owen</option>
+    <option value="Lucca">Lucca</option>
+    <option value="Jackson">Jackson</option>
+    <option value="Joey">Joey</option>
+    <option value="Cody">Cody</option>
+    <option value="Bryce">Bryce</option>
+    <option value="Josh">Josh</option>
+  </select>
+  <button type="submit">Add Friend</button>
+</form>
+
+<!-- displaying feedback 
+<div id = "messageArea"></div>-->
+
 {{> footer}}
+
+<script>
+  document.querySelector('#addFriendForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const friendSelect = document.querySelector('#friendSelect');
+    const selectedFriend = friendSelect.options[friendSelect.selectedIndex].value;
+
+    fetch('/addFriends', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ friend: selectedFriend }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === "success") {
+        alert(`${selectedFriend} added as a friend.`);
+      } else {
+        alert(data.message);
+        //alert(`Failed to add ${selectedFriend} as a friend.`); // error that keeps on appearing
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  });
+</script>
