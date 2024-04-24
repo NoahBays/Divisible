@@ -13,7 +13,7 @@
 $(document).ready(function(){
     document.querySelectorAll('.viewGroup').forEach(function(button) {
         button.addEventListener('click', function() {
-            window.location.href = '/group/' + this.innerHTML;    
+            window.location.href = '/group' + this.innerHTML;    
         });
     });
 });
@@ -21,15 +21,7 @@ $(document).ready(function(){
 $(document).ready(function(){
     document.querySelectorAll('.viewUserButton').forEach(function(button) {
         button.addEventListener('click', function() {
-            window.location.href = '/viewUser/' + this.innerHTML;    
-        });
-    });
-});
-
-$(document).ready(function(){
-    document.querySelectorAll('.viewRequest').forEach(function(button) {
-        button.addEventListener('click', function() {
-            window.location.href = '/request/' + this.innerHTML;    
+            window.location.href = '/viewUser' + this.innerHTML;    
         });
     });
 });

@@ -114,37 +114,41 @@ app.get("/home", (req, res) => {
   req.session.message = null;
   req.session.save();
   //Find user, friendships, if user is an admin in any groups, if a member is a part of a group, all transactions related to user
-  db.task("Find user, friends, admins, if in group, and all transactions", function (task) {
-    return task.batch([
-      task.one("SELECT username, wallet FROM users WHERE username = $1", [
-        req.session.user.username,
-      ]),
-      task.any(
-        "SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username",
-        [req.session.user.username]
-      ),
-      task.any("SELECT * FROM groups WHERE group_admin_username = $1 ORDER BY group_name", [
-        req.session.user.username,
-      ]),
-      task.any(
-        "SELECT * FROM group_members WHERE username = $1 ORDER BY username",
-        [req.session.user.username]
-      ),
-      task.any(
-        "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date DESC",
-        [req.session.user.username]
-      ),
-      task.any(
-        "SELECT * FROM requests WHERE recipient_username = $1 ORDER BY date DESC",
-        [req.session.user.username] 
-      )
-    ]);
-  })
+  db.task(
+    "Find user, friends, admins, if in group, and all transactions",
+    function (task) {
+      return task.batch([
+        task.one("SELECT username, wallet FROM users WHERE username = $1", [
+          req.session.user.username,
+        ]),
+        task.any(
+          "SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username",
+          [req.session.user.username]
+        ),
+        task.any(
+          "SELECT * FROM groups WHERE group_admin_username = $1 ORDER BY group_name",
+          [req.session.user.username]
+        ),
+        task.any(
+          "SELECT * FROM group_members WHERE username = $1 ORDER BY username",
+          [req.session.user.username]
+        ),
+        task.any(
+          "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date DESC",
+          [req.session.user.username]
+        ),
+        task.any(
+          "SELECT * FROM requests WHERE recipient_username = $1 ORDER BY date DESC",
+          [req.session.user.username]
+        ),
+      ]);
+    }
+  )
     .then((user_data) => {
       const admin_members_arr = [];
       const not_admin_members_arr = [];
       const not_admin_arr = [];
-//Find all group members where user is admin
+      //Find all group members where user is admin
       for (let i = 0; i < user_data[2].length; i++) {
         if (user_data[2]) {
           //Find group members where user is admin
@@ -163,7 +167,7 @@ app.get("/home", (req, res) => {
             });
         }
       }
-//Find all group members where user is also a member
+      //Find all group members where user is also a member
       for (let i = 0; i < user_data[3].length; i++) {
         if (user_data[3]) {
           //Find other group members where user is also a member
@@ -182,7 +186,7 @@ app.get("/home", (req, res) => {
             });
         }
       }
-//Find group admin where user is a member
+      //Find group admin where user is a member
       for (let i = 0; i < user_data[3].length; i++) {
         if (user_data[3]) {
           //Find admin where user is group member
@@ -211,7 +215,7 @@ app.get("/home", (req, res) => {
         not_admin_members: not_admin_members_arr,
         message: message,
         request: user_data[5],
-        request_number: request_number
+        request_number: request_number,
       });
     })
     .catch((err) => {
@@ -264,7 +268,7 @@ app.post("/addMoney", (req, res) => {
 
 // viewUser
 
-app.get("/viewUser/:username", async (req, res) => {
+app.get("/viewUser:username", async (req, res) => {
   const loggedInUsername = req.session.user.username;
   const visitingUsername = req.params.username;
   const friendship = await db.manyOrNone(
@@ -293,7 +297,7 @@ app.get("/viewUser/:username", async (req, res) => {
   });
 });
 
-app.get("/group/:group_name", async (req, res) => {
+app.get("/group:group_name", async (req, res) => {
   // Fetch query parameters from the request object
   const name = req.params.group_name; //for differing views based on whether current user is group admin or not - currently not implemented
   const currentGroup = await db.oneOrNone(
@@ -335,16 +339,23 @@ app.get("/group/:group_name", async (req, res) => {
       });*/
 });
 
-app.get("/request/:username", async (req, res) => {
+app.get("/request:username", async (req, res) => {
   const loggedInUsername = req.session.user.username;
   const asker_username = req.params.username;
 
-  console.log("asker_username",asker_username);
-  
+  console.log("asker_username", asker_username);
+
   // Fetch the user data of the visiting user
-  const requests = await db.any("SELECT * FROM requests WHERE asker_username = $1 AND recipient_username = $2", [asker_username, loggedInUsername]);
-  console.log("requests = ", requests)
-  res.render("pages/request", { username:loggedInUsername, friend: asker_username, requests: requests });
+  const requests = await db.any(
+    "SELECT * FROM requests WHERE asker_username = $1 AND recipient_username = $2",
+    [asker_username, loggedInUsername]
+  );
+  console.log("requests = ", requests);
+  res.render("pages/request", {
+    username: loggedInUsername,
+    friend: asker_username,
+    requests: requests,
+  });
 });
 
 app.get("/test", (req, res) => {
@@ -822,56 +833,94 @@ app.post("/payment-group", async (req, res) => {
           group_name,
         ]);
       }
-
-});
+    });
 
     res.redirect("/home");
   } catch (error) {
-    console.error('Payment transaction failed:', error);
-    res.status(500).send('Failed to complete payment transaction');
+    console.error("Payment transaction failed:", error);
+    res.status(500).send("Failed to complete payment transaction");
   }
 });
 
-app.post('/request', async (req, res) => {
-  const { chargeDesc, charge_amount, date, asker_username, recipient_username, requestApproval } = req.body;
+app.post("/request", async (req, res) => {
+  const {
+    chargeDesc,
+    charge_amount,
+    date,
+    asker_username,
+    recipient_username,
+    requestApproval,
+  } = req.body;
   const amount = parseFloat(parseFloat(charge_amount).toFixed(2));
   try {
-    await db.tx(async t => {
-      const user = await t.oneOrNone("SELECT * FROM users WHERE username = $1", [asker_username]);
+    await db.tx(async (t) => {
+      const user = await t.oneOrNone(
+        "SELECT * FROM users WHERE username = $1",
+        [asker_username]
+      );
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
-      if(requestApproval=='accept')
-      {
-        const senderResult = await updateUserWallet(recipient_username, -amount, t);
+      if (requestApproval == "accept") {
+        const senderResult = await updateUserWallet(
+          recipient_username,
+          -amount,
+          t
+        );
         if (!senderResult) {
-          throw new Error('Failed to update recipient\'s wallet or user not found');
+          throw new Error(
+            "Failed to update recipient's wallet or user not found"
+          );
         }
 
-        const recipientResult = await updateUserWallet(asker_username, amount, t);
+        const recipientResult = await updateUserWallet(
+          asker_username,
+          amount,
+          t
+        );
         if (!recipientResult) {
-          throw new Error('Failed to update asker\'s wallet or user not found');
+          throw new Error("Failed to update asker's wallet or user not found");
         }
 
-        const removeRequestQuery = "DELETE FROM requests WHERE charge_amount = $1 AND charge_desc = $2 AND date = $3 AND asker_username = $4 AND recipient_username = $5";
-        await t.none(removeRequestQuery, [amount, chargeDesc, date, asker_username, recipient_username])
-        .catch((err) => {console.log(err);res.redirect("/home");});
+        const removeRequestQuery =
+          "DELETE FROM requests WHERE charge_amount = $1 AND charge_desc = $2 AND date = $3 AND asker_username = $4 AND recipient_username = $5";
+        await t
+          .none(removeRequestQuery, [
+            amount,
+            chargeDesc,
+            date,
+            asker_username,
+            recipient_username,
+          ])
+          .catch((err) => {
+            console.log(err);
+            res.redirect("/home");
+          });
         req.session.message = "Request successfully accepted.";
-      }
-      else
-      {
-        const removeRequestQuery = "DELETE FROM requests WHERE charge_amount = $1 AND charge_desc = $2 AND date = $3 AND asker_username = $4 AND recipient_username = $5";
-        await t.none(removeRequestQuery, [amount, chargeDesc, date, asker_username, recipient_username])
-        .catch((err) => {console.log(err);res.redirect("/home");});
+      } else {
+        const removeRequestQuery =
+          "DELETE FROM requests WHERE charge_amount = $1 AND charge_desc = $2 AND date = $3 AND asker_username = $4 AND recipient_username = $5";
+        await t
+          .none(removeRequestQuery, [
+            amount,
+            chargeDesc,
+            date,
+            asker_username,
+            recipient_username,
+          ])
+          .catch((err) => {
+            console.log(err);
+            res.redirect("/home");
+          });
         req.session.message = "Request successfully denied.";
       }
     });
     req.session.save();
-    res.redirect('/home');
+    res.redirect("/home");
   } catch (error) {
-    console.error('Request fulfillment failed:', error);
-    res.status(500).send('Failed to complete request');
+    console.error("Request fulfillment failed:", error);
+    res.status(500).send("Failed to complete request");
   }
 });
 
