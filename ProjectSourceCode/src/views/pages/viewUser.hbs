@@ -1,15 +1,29 @@
-{{> header}}
+<head>  
+<style>
+    .profile-picture {
+        width: 50px;  /* Adjust as needed */
+        height: 50px; /* Adjust as needed */
+    }
+    .center-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+</head>
+
 {{> nav}}
 
-<div class="center-content"></div>
+<div class="center-content">
     {{! Check if the user is friends with the clicked friend }}
     {{#if isFriend}}
         <h1>{{friend.username}}</h1>
         <p>Transaction Balance: {{balance}}</p>
+        <img src="/{{friend.profile_picture_url}}" alt="Profile Picture" class ="profile-picture">
+        <p>Email: {{friend.email}} </p>
     {{else}}
         <h1>{{friend.username}}</h1>
         <button>Add Friend</button>
     {{/if}}
 </div>
-
-{{> footer}}

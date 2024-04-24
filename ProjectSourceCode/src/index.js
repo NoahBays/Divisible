@@ -3,6 +3,8 @@
 // *****************************************************
 const express = require("express"); // To build an application server or API
 const app = express();
+app.use(express.static('public'));
+
 const handlebars = require("express-handlebars");
 const Handlebars = require("handlebars");
 const path = require("path");
@@ -108,37 +110,48 @@ app.get("/", (req, res) => {
 // Home
 // GET
 app.get("/home", (req, res) => {
-  message = req.session.message;
+  const message = req.session.message;
   req.session.message = null;
+  req.session.save();
   //Find user, friendships, if user is an admin in any groups, if a member is a part of a group, all transactions related to user
-  db.task("Find user, friends, admins, if in group, and all transactions", function (task) {
-    return task.batch([
-      task.one("SELECT username, wallet FROM users WHERE username = $1", [
-        req.session.user.username,
-      ]),
-      task.any(
-        "SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username",
-        [req.session.user.username]
-      ),
-      task.any("SELECT * FROM groups WHERE group_admin_username = $1", [
-        req.session.user.username,
-      ]),
-      task.any(
-        "SELECT * FROM group_members WHERE username = $1 ORDER BY username",
-        [req.session.user.username]
-      ),
-      task.any(
-        "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date DESC",
-        [req.session.user.username]
-      ),
-    ]);
-  })
+  db.task(
+    "Find user, friends, admins, if in group, and all transactions",
+    function (task) {
+      return task.batch([
+        task.one("SELECT username, wallet FROM users WHERE username = $1", [
+          req.session.user.username,
+        ]),
+        task.any(
+          "SELECT * FROM friendships WHERE user_username = $1 ORDER BY user_username",
+          [req.session.user.username]
+        ),
+        task.any(
+          "SELECT * FROM groups WHERE group_admin_username = $1 ORDER BY group_name",
+          [req.session.user.username]
+        ),
+        task.any(
+          "SELECT * FROM group_members WHERE username = $1 ORDER BY username",
+          [req.session.user.username]
+        ),
+        task.any(
+          "SELECT * FROM transactions_individual WHERE sender_username = $1 OR recipient_username = $1 ORDER BY date DESC",
+          [req.session.user.username]
+        ),
+        task.any(
+          "SELECT * FROM requests WHERE recipient_username = $1 ORDER BY date DESC",
+          [req.session.user.username]
+        ),
+      ]);
+    }
+  )
     .then((user_data) => {
       const admin_members_arr = [];
       const not_admin_members_arr = [];
       const not_admin_arr = [];
+      //Find all group members where user is admin
       for (let i = 0; i < user_data[2].length; i++) {
         if (user_data[2]) {
+          //Find group members where user is admin
           db.any(
             "SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id",
             [user_data[2][i].id]
@@ -154,8 +167,10 @@ app.get("/home", (req, res) => {
             });
         }
       }
+      //Find all group members where user is also a member
       for (let i = 0; i < user_data[3].length; i++) {
         if (user_data[3]) {
+          //Find other group members where user is also a member
           db.any(
             "SELECT * FROM group_members WHERE group_id = $1 ORDER BY group_id",
             [user_data[3][i].group_id]
@@ -163,7 +178,6 @@ app.get("/home", (req, res) => {
             .then((not_admin_members_data) => {
               for (let j = 0; j < not_admin_members_data.length; j++) {
                 not_admin_members_arr.push(not_admin_members_data[j]);
-                // console.log("not_admin_members_arr = ", not_admin_members_arr);
               }
             })
             .catch((err) => {
@@ -172,15 +186,16 @@ app.get("/home", (req, res) => {
             });
         }
       }
+      //Find group admin where user is a member
       for (let i = 0; i < user_data[3].length; i++) {
         if (user_data[3]) {
+          //Find admin where user is group member
           db.any("SELECT * FROM groups WHERE id = $1", [
             user_data[3][i].group_id,
           ])
             .then((not_admin_data) => {
               for (let j = 0; j < not_admin_data.length; j++) {
                 not_admin_arr.push(not_admin_data[j]);
-                // console.log("not_admin_arr = ", not_admin_arr);
               }
             })
             .catch((err) => {
@@ -189,8 +204,7 @@ app.get("/home", (req, res) => {
             });
         }
       }
-      console.log("user_data[0] = ", user_data[0]);
-      console.log("user_data[4] = ", user_data[4]);
+      const request_number = user_data[5].length;
       res.render("pages/home", {
         user: user_data[0],
         friendships: user_data[1],
@@ -199,39 +213,62 @@ app.get("/home", (req, res) => {
         admin_members: admin_members_arr,
         not_admin: not_admin_arr,
         not_admin_members: not_admin_members_arr,
+        message: message,
+        request: user_data[5],
+        request_number: request_number,
       });
     })
-    .catch((err) => {console.log(err);res.redirect("/login");});
+    .catch((err) => {
+      console.log(err);
+      res.redirect("/login");
+    });
 });
 
 app.get("/addMoney", (req, res) => {
   db.one("SELECT * FROM users WHERE username = $1", [req.session.user.username])
-  .then(data => {
-    res.render("pages/addMoney", {
-      user: data
+    .then((data) => {
+      res.render("pages/addMoney", {
+        user: data,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.redirect("/login");
     });
-  })
-  .catch((err) => {console.log(err);res.redirect("/login");});
 });
 
 app.post("/addMoney", (req, res) => {
-  db.one("SELECT wallet FROM users WHERE username = $1", [req.session.user.username])
-  .then(data => {
-console.log("parseFloat(parseFloat(req.body.money)).toFixed(2) + data.wallet = ", parseFloat(parseFloat(req.body.money).toFixed(2)) + data.wallet);
-    db.none("UPDATE users SET wallet = $1 WHERE username = $2", [parseFloat(parseFloat(req.body.money).toFixed(2))   + data.wallet, req.session.user.username])
-    .then(data2 => {
-      req.session.message = "Money added successfully.";
+  db.one("SELECT wallet FROM users WHERE username = $1", [
+    req.session.user.username,
+  ])
+    .then((data) => {
+      console.log(
+        "parseFloat(parseFloat(req.body.money)).toFixed(2) + data.wallet = ",
+        parseFloat(parseFloat(req.body.money).toFixed(2)) + data.wallet
+      );
+      db.none("UPDATE users SET wallet = $1 WHERE username = $2", [
+        parseFloat(parseFloat(req.body.money).toFixed(2)) + data.wallet,
+        req.session.user.username,
+      ])
+        .then((data2) => {
+          req.session.message = "Money added successfully.";
 
-      res.redirect("/home");
+          res.redirect("/home");
+        })
+        .catch((err) => {
+          console.log(err);
+          res.redirect("/login");
+        });
     })
-    .catch((err) => {console.log(err);res.redirect("/login");});
-  })
-  .catch((err) => {console.log(err);res.redirect("/login");});
+    .catch((err) => {
+      console.log(err);
+      res.redirect("/login");
+    });
 });
 
 // viewUser
 
-app.get("/viewUser/:username", async (req, res) => {
+app.get("/viewUser:username", async (req, res) => {
   const loggedInUsername = req.session.user.username;
   const visitingUsername = req.params.username;
   const friendship = await db.manyOrNone(
@@ -239,30 +276,56 @@ app.get("/viewUser/:username", async (req, res) => {
     [loggedInUsername, visitingUsername]
   );
   const isFriend = !!friendship;
-  
+
   // Fetch the user data of the visiting user
-  const visitingUser = await db.oneOrNone("SELECT * FROM users WHERE username = $1", [visitingUsername]);
-  const balanceRow = await db.oneOrNone("SELECT outstanding_balance FROM friendships WHERE user_username = $1 AND friend_username = $2", [loggedInUsername, visitingUsername]);
-  const outstanding_balance = balanceRow ? balanceRow.outstanding_balance : null;
-  res.render("pages/viewUser", { friend: visitingUser, balance: outstanding_balance, isFriend });
+  const visitingUser = await db.oneOrNone(
+    "SELECT * FROM users WHERE username = $1",
+    [visitingUsername]
+  );
+
+  const balanceRow = await db.oneOrNone(
+    "SELECT outstanding_balance FROM friendships WHERE user_username = $1 AND friend_username = $2",
+    [loggedInUsername, visitingUsername]
+  );
+  const outstanding_balance = balanceRow
+    ? balanceRow.outstanding_balance
+    : null;
+  res.render("pages/viewUser", {
+    friend: visitingUser,
+    balance: outstanding_balance,
+    isFriend,
+  });
 });
 
-app.get("/group/:group_name", async (req, res) => {
+app.get("/group:group_name", async (req, res) => {
   // Fetch query parameters from the request object
   const name = req.params.group_name; //for differing views based on whether current user is group admin or not - currently not implemented
-  const currentGroup = await db.oneOrNone("SELECT * FROM groups WHERE group_name = $1", [name]);
+  const currentGroup = await db.oneOrNone(
+    "SELECT * FROM groups WHERE group_name = $1",
+    [name]
+  );
   // Multiple queries using templated strings
   const current_id = currentGroup.id;
-  const currentGroupMembers = await db.manyOrNone("SELECT * FROM group_members WHERE group_id = $1", [current_id]);
-  const transactions = await db.any("SELECT * FROM transactions_group WHERE group_id = $1 ORDER BY date DESC", [current_id]);
+  const currentGroupMembers = await db.manyOrNone(
+    "SELECT * FROM group_members WHERE group_id = $1",
+    [current_id]
+  );
+  const transactions = await db.any(
+    "SELECT * FROM transactions_group WHERE group_name = $1 ORDER BY date DESC",
+    [name]
+  );
 
   // use task to execute multiple queries
-        //Checks for valid data for group_id and group_admin_username
-        if (currentGroup != null) {
-          res.render("pages/group", {group: currentGroup, groupMembers: currentGroupMembers, transactions: transactions});
-        } else {
-          res.render("pages/login"); //would like to return home upon unsuccessful attetmpt, not implemented yet
-        }
+  //Checks for valid data for group_id and group_admin_username
+  if (currentGroup != null) {
+    res.render("pages/group", {
+      group: currentGroup,
+      groupMembers: currentGroupMembers,
+      transactions: transactions,
+    });
+  } else {
+    res.render("pages/login"); //would like to return home upon unsuccessful attetmpt, not implemented yet
+  }
   // if query execution fails
   // send error message
   /*.catch(err => {
@@ -274,6 +337,25 @@ app.get("/group/:group_name", async (req, res) => {
           error: err,
         });
       });*/
+});
+
+app.get("/request:username", async (req, res) => {
+  const loggedInUsername = req.session.user.username;
+  const asker_username = req.params.username;
+
+  console.log("asker_username", asker_username);
+
+  // Fetch the user data of the visiting user
+  const requests = await db.any(
+    "SELECT * FROM requests WHERE asker_username = $1 AND recipient_username = $2",
+    [asker_username, loggedInUsername]
+  );
+  console.log("requests = ", requests);
+  res.render("pages/request", {
+    username: loggedInUsername,
+    friend: asker_username,
+    requests: requests,
+  });
 });
 
 app.get("/test", (req, res) => {
@@ -307,7 +389,10 @@ app.post("/createGroup", async (req, res) => {
 
   try {
     // Check if a group with the same name and admin already exists
-    const existingGroup = await db.oneOrNone("SELECT * FROM groups WHERE group_admin_username = $1 AND group_name = $2", [group_admin, group_name]);
+    const existingGroup = await db.oneOrNone(
+      "SELECT * FROM groups WHERE group_admin_username = $1 AND group_name = $2",
+      [group_admin, group_name]
+    );
 
     if (existingGroup) {
       // If the group already exists, send an error message
@@ -390,9 +475,10 @@ app.post("/addGroupMembers", async (req, res) => {
         await db.tx(async (t) => {
           // For each username in the array, insert a new row in the group_members table
           for (const username of groupMembers) {
+            var money = 0;
             await t.none(
-              "INSERT INTO group_members (group_id, username) VALUES ($1, $2)",
-              [groupId, username]
+              "INSERT INTO group_members (group_id, username, outstanding_balance) VALUES ($1, $2, $3)",
+              [groupId, username, money]
             );
           }
         });
@@ -416,12 +502,13 @@ app.get("/addFriends", (req, res) => {
 });
 
 app.post("/addFriends", async (req, res) => {
-  console.log(req.session); // not showing
-  console.log("testing testing");
+  //console.log(req.session); // not showing
+  //console.log("testing testing");
   const { friend } = req.body;
-  const currentUser = req.session.user.username; 
+  const currentUser = req.session.user.username;
 
-  if (!currentUser) { // trying to check if currentUser = null
+  if (!currentUser) {
+    // trying to check if currentUser = null
     res.json({ status: 401 });
   }
 
@@ -436,16 +523,22 @@ app.post("/addFriends", async (req, res) => {
       return res.json({ status: 400, message: "Friendship already exists." });
     }
 
+
+    if (currentUser == friend) {
+      return res.json({ status: 400, message: 'Failed to add as a friend.' });
+    }
+=======
     // Insert the friendship into the friendships table
     // await db.none(
     //   "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)",
-    //   [currentUser, friend, 0] 
+    //   [currentUser, friend, 0]
     // );
 
-  const query =
-    "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)";
-  await db.none(query, [currentUser, friend, 0]);
-  
+
+    const query =
+      "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)";
+    await db.none(query, [currentUser, friend, 0]);
+
     res.json({ status: 200, message: `${friend} added as a friend.` });
   } catch (error) {
     console.error(error);
@@ -454,9 +547,10 @@ app.post("/addFriends", async (req, res) => {
   }
 });
 
-app.get("/paymentWindow", (req, res) => {
-  res.render("pages/paymentWindow", {});
+app.get("/individualPayment", (req, res) => {
+  res.render("pages/individualPayment", {});
 });
+
 app.get("/groupPayment", (req, res) => {
   res.render("pages/groupPayment", {});
 });
@@ -550,106 +644,163 @@ app.post("/login", async (req, res) => {
     res.render("pages/login", { message: "An error occurred" });
   }
 });
-app.post('/payment-individual', async (req, res) => {
-  const { chargeName, amount,password, senderUsername, recipientUsername, transactionType, payback } = req.body;
+app.post("/payment-individual", async (req, res) => {
+  const {
+    chargeName,
+    amount,
+    password,
+    senderUsername,
+    recipientUsername,
+    transactionType,
+    payback,
+  } = req.body;
 
   // Validate input
   if (amount <= 0) {
-    return res.status(400).send('Invalid amount specified.');
+    return res.status(400).send("Invalid amount specified.");
   }
 
   try {
-    await db.tx(async t => {
-      const user = await t.oneOrNone("SELECT * FROM users WHERE username = $1", [senderUsername]);
+    await db.tx(async (t) => {
+      const user = await t.oneOrNone(
+        "SELECT * FROM users WHERE username = $1",
+        [senderUsername]
+      );
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       const match = await bcrypt.compare(password, user.password);
       if (!match) {
-        throw new Error('Password incorrect');
+        throw new Error("Password incorrect");
       }
 
-      if(transactionType=='paying')
-      {
+      if (transactionType == "paying") {
         const senderResult = await updateUserWallet(senderUsername, -amount, t);
         if (!senderResult) {
-          throw new Error('Failed to update sender\'s wallet or user not found');
+          throw new Error("Failed to update sender's wallet or user not found");
         }
 
-        const recipientResult = await updateUserWallet(recipientUsername, amount, t);
+        const recipientResult = await updateUserWallet(
+          recipientUsername,
+          amount,
+          t
+        );
         if (!recipientResult) {
-          throw new Error('Failed to update recipient\'s wallet or user not found');
+          throw new Error(
+            "Failed to update recipient's wallet or user not found"
+          );
         }
-        if (payback === 'yes') {
-          const friend_result1=await updateFriendshipBalance(senderUsername, recipientUsername, amount, t);
+        if (payback === "yes") {
+          const friend_result1 = await updateFriendshipBalance(
+            senderUsername,
+            recipientUsername,
+            amount,
+            t
+          );
           if (!friend_result1) {
-            throw new Error('Failed to update outstanding balance sender');
+            throw new Error("Failed to update outstanding balance sender");
           }
-          const friend_result2=await updateFriendshipBalance(recipientUsername, senderUsername, -amount, t);
+          const friend_result2 = await updateFriendshipBalance(
+            recipientUsername,
+            senderUsername,
+            -amount,
+            t
+          );
           if (!friend_result2) {
-            throw new Error('Failed to update outstanding balance reciever');
+            throw new Error("Failed to update outstanding balance reciever");
           }
         }
 
         const transactionQuery = `
           INSERT INTO transactions_individual (charge_amount, charge_desc, date, sender_username, recipient_username)
           VALUES ($1, $2, CURRENT_DATE, $3, $4)
-      ` ;
-        await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername]);
-      }
-      else{
+      `;
+        await t.none(transactionQuery, [
+          amount,
+          chargeName,
+          senderUsername,
+          recipientUsername,
+        ]);
+      } else {
         // adding a request form
         // update friendship balance
-        const friend_result1=await updateFriendshipBalance(senderUsername, recipientUsername, -amount, t);
-          if (!friend_result1) {
-            throw new Error('Failed to update outstanding balance sender');
-          }
-          const friend_result2=await updateFriendshipBalance(recipientUsername, senderUsername, amount, t);
-          if (!friend_result2) {
-            throw new Error('Failed to update outstanding balance reciever');
-          }
-          // add request to request table
-          const transactionQuery = `
+        const friend_result1 = await updateFriendshipBalance(
+          senderUsername,
+          recipientUsername,
+          -amount,
+          t
+        );
+        if (!friend_result1) {
+          throw new Error("Failed to update outstanding balance sender");
+        }
+        const friend_result2 = await updateFriendshipBalance(
+          recipientUsername,
+          senderUsername,
+          amount,
+          t
+        );
+        if (!friend_result2) {
+          throw new Error("Failed to update outstanding balance reciever");
+        }
+        // add request to request table
+        const transactionQuery = `
           INSERT INTO requests (charge_amount, charge_desc, date, asker_username, recipient_username)
           VALUES ($1, $2, CURRENT_DATE, $3, $4)
-      ` ;
-        await t.none(transactionQuery, [amount, chargeName, senderUsername, recipientUsername]);
+      `;
+        await t.none(transactionQuery, [
+          amount,
+          chargeName,
+          senderUsername,
+          recipientUsername,
+        ]);
+        req.session.message = "Request sent to " + recipientUsername;
       }
+    });
 
-});
-
-    res.redirect('/home');
+    res.redirect("/home");
   } catch (error) {
-    console.error('Payment transaction failed:', error);
-    res.status(500).send('Failed to complete payment transaction');
+    console.error("Payment transaction failed:", error);
+    res.status(500).send("Failed to complete payment transaction");
   }
 });
 
-app.post('/payment-group', async (req, res) => {
-  const { charge_name, amount,password, group_member, group_name, transactionType } = req.body;
+app.post("/payment-group", async (req, res) => {
+  const {
+    charge_name,
+    amount,
+    password,
+    group_member,
+    group_name,
+    transactionType,
+  } = req.body;
 
   try {
-    await db.tx(async t => {
-      const user = await t.oneOrNone("SELECT * FROM users WHERE username = $1", [group_member]);
+    await db.tx(async (t) => {
+      const user = await t.oneOrNone(
+        "SELECT * FROM users WHERE username = $1",
+        [group_member]
+      );
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       const match = await bcrypt.compare(password, user.password);
       if (!match) {
-        throw new Error('Password incorrect');
+        throw new Error("Password incorrect");
       }
 
-      const group_id = await t.oneOrNone(`
+      const group_id = await t.oneOrNone(
+        `
           SELECT id
           FROM groups
           WHERE group_name = $1 
-        `, [group_name]);
-      if(!group_id){
-        throw new Error('group does not exist');
+        `,
+        [group_name]
+      );
+      if (!group_id) {
+        throw new Error("group does not exist");
       }
-
       
       if(transactionType=='paying')
       {
@@ -658,11 +809,18 @@ app.post('/payment-group', async (req, res) => {
       else{
         // Validate input
         if (amount <= 0) {
-          return res.status(400).send('Enter a positive amount to request payment.');
+          return res
+            .status(400)
+            .send("Enter a positive amount to request payment.");
         }
-        const updateResult = await updateGroupMemberBalance(group_member, amount, group_id.id, t);
+        const updateResult = await updateGroupMemberBalance(
+          group_member,
+          amount,
+          group_id.id,
+          t
+        );
         if (!updateResult.success) {
-            throw new Error('Failed to update group member balances');
+          throw new Error("Failed to update group member balances");
         }
 
         // Insert transaction into group transaction table
@@ -672,13 +830,94 @@ app.post('/payment-group', async (req, res) => {
         `;
         await t.none(transactionQuery, [group_id.id, amount, charge_name, group_member, group_name]);
       }
+    });
 
+    res.redirect("/home");
+  } catch (error) {
+    console.error("Payment transaction failed:", error);
+    res.status(500).send("Failed to complete payment transaction");
+  }
 });
 
-    res.redirect('/home');
+app.post("/request", async (req, res) => {
+  const {
+    chargeDesc,
+    charge_amount,
+    date,
+    asker_username,
+    recipient_username,
+    requestApproval,
+  } = req.body;
+  const amount = parseFloat(parseFloat(charge_amount).toFixed(2));
+  try {
+    await db.tx(async (t) => {
+      const user = await t.oneOrNone(
+        "SELECT * FROM users WHERE username = $1",
+        [asker_username]
+      );
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      if (requestApproval == "accept") {
+        const senderResult = await updateUserWallet(
+          recipient_username,
+          -amount,
+          t
+        );
+        if (!senderResult) {
+          throw new Error(
+            "Failed to update recipient's wallet or user not found"
+          );
+        }
+
+        const recipientResult = await updateUserWallet(
+          asker_username,
+          amount,
+          t
+        );
+        if (!recipientResult) {
+          throw new Error("Failed to update asker's wallet or user not found");
+        }
+
+        const removeRequestQuery =
+          "DELETE FROM requests WHERE charge_amount = $1 AND charge_desc = $2 AND date = $3 AND asker_username = $4 AND recipient_username = $5";
+        await t
+          .none(removeRequestQuery, [
+            amount,
+            chargeDesc,
+            date,
+            asker_username,
+            recipient_username,
+          ])
+          .catch((err) => {
+            console.log(err);
+            res.redirect("/home");
+          });
+        req.session.message = "Request successfully accepted.";
+      } else {
+        const removeRequestQuery =
+          "DELETE FROM requests WHERE charge_amount = $1 AND charge_desc = $2 AND date = $3 AND asker_username = $4 AND recipient_username = $5";
+        await t
+          .none(removeRequestQuery, [
+            amount,
+            chargeDesc,
+            date,
+            asker_username,
+            recipient_username,
+          ])
+          .catch((err) => {
+            console.log(err);
+            res.redirect("/home");
+          });
+        req.session.message = "Request successfully denied.";
+      }
+    });
+    req.session.save();
+    res.redirect("/home");
   } catch (error) {
-    console.error('Payment transaction failed:', error);
-    res.status(500).send('Failed to complete payment transaction');
+    console.error("Request fulfillment failed:", error);
+    res.status(500).send("Failed to complete request");
   }
 });
 
@@ -699,11 +938,20 @@ async function processGroupPayback(group_name, group_member, charge_name, id, t)
           console.log(outstanding_group[0].charge_amount);
           console.log(group_member);
 
-      await t.none(`
+  if (!outstanding_group) {
+    // If no records are found, it means all dues are paid by the user
+    console.log("User has paid all their groups");
+    return;
+  }
+
+  await t.none(
+    `
           UPDATE transactions_group
           SET members_who_paid = array_append(members_who_paid, $1)
           WHERE charge_name = $2
-           `, [group_member, charge_name]);
+           `,
+    [group_member, charge_name]
+  );
 
       await updateUserWallet(group_member, -outstanding_group[0].charge_amount,t);
       await updateUserWallet(outstanding_group[0].requester_username, outstanding_group[0].charge_amount, t);
@@ -715,25 +963,30 @@ async function processGroupPayback(group_name, group_member, charge_name, id, t)
   `, [outstanding_group[0].charge_amount, group_member, id]);
         }
 }
-async function updateFriendshipBalance(user_username, friend_username, amount, t) {
+async function updateFriendshipBalance(
+  user_username,
+  friend_username,
+  amount,
+  t
+) {
   try {
-      const existingBalance = await t.oneOrNone(
-          'SELECT outstanding_balance FROM friendships WHERE user_username = $1 AND friend_username = $2',
-          [user_username, friend_username]
-      );
-      if(amount>=-existingBalance && amount>0){
-        amount=-existingBalance;
-      }
-      if(amount<=-existingBalance && amount<0){
-        amount = -existingBalance;
-      }
+    const existingBalance = await t.oneOrNone(
+      "SELECT outstanding_balance FROM friendships WHERE user_username = $1 AND friend_username = $2",
+      [user_username, friend_username]
+    );
+    if (amount >= -existingBalance && amount > 0) {
+      amount = -existingBalance;
+    }
+    if (amount <= -existingBalance && amount < 0) {
+      amount = -existingBalance;
+    }
 
-      await t.none(
-        'UPDATE friendships SET outstanding_balance = outstanding_balance + $1 WHERE user_username = $2 AND friend_username = $3',
-        [amount, user_username, friend_username]
-         );
+    await t.none(
+      "UPDATE friendships SET outstanding_balance = outstanding_balance + $1 WHERE user_username = $2 AND friend_username = $3",
+      [amount, user_username, friend_username]
+    );
 
-      return { success: true };
+    return { success: true };
   } catch (error) {
       console.error('Error updating friendship balance:', error);
       throw error;
@@ -747,16 +1000,16 @@ async function updateUserWallet(username, amount, transaction) {
 
 async function updateGroupMemberBalance(requesterUsername, amount, id, t) {
   try {
-      const updateQuery = `
+    const updateQuery = `
           UPDATE group_members
           SET outstanding_balance = outstanding_balance + $1
           WHERE group_id = $2 AND username != $3
       `;
-      await t.none(updateQuery, [amount, id, requesterUsername]);
-      return { success: true };
+    await t.none(updateQuery, [amount, id, requesterUsername]);
+    return { success: true };
   } catch (error) {
-      console.error('Error updating group member balance:', error);
-      throw error;
+    console.error("Error updating group member balance:", error);
+    throw error;
   }
 }
 

@@ -1,15 +1,19 @@
 INSERT INTO users
-(username, password, wallet)
+(username, password, wallet, email, profile_picture_url)
 VALUES
---If you want to test yourself, the password is the same for everyone which is "lmnop"
-('Noah','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 6354.31),
-('Ben','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 71464.22),
-('Jace','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 7454.86),
-('Lucca','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 69247.40),
-('Owen','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 454752.35),
-('Logan','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 594220.40),
---Username and password "a"
-('a','$2b$10$whBSEpqgXwZRCDV9Sl.wtedvQ7KpM8Onq5W1XXf658xsateej3qIq', 0.00);
+('Noah','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 6354.31, 'noah@example.com', 'images/default_PFP.png'),
+('Ben','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 71464.22, 'ben@example.com', 'images/default_PFP.png'),
+('Jace','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 7454.86, 'jace@example.com', 'images/default_PFP.png'),
+('Lucca','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 69247.40, 'lucca@example.com', 'images/default_PFP.png'),
+('Owen','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 454752.35, 'owen@example.com', 'images/default_PFP.png'),
+('Logan','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 594220.40, 'logan@example.com', 'images/default_PFP.png'),
+('Jackson','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 1567.31, 'jackson@example.com', 'images/default_PFP.png'),
+('Joey','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 724.63, 'joey@example.com', 'images/default_PFP.png'),
+('Cody','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 17.43, 'cody@example.com', 'images/default_PFP.png'),
+('Bryce','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 15673.09, 'bryce@example.com', 'images/default_PFP.png'),
+('Josh','$2b$10$zYuTFaV3uXI1X54Cj0dCQO1HnKQPTSYk1S7CUF7lYoYMS7cKVDP82', 987.00, 'josh@example.com', 'images/default_PFP.png'),
+('a','$2b$10$whBSEpqgXwZRCDV9Sl.wtedvQ7KpM8Onq5W1XXf658xsateej3qIq', 0.00, 'a@example.com', 'images/default_PFP.png');
+
 
 INSERT INTO friendships
 (user_username, friend_username, outstanding_balance)
@@ -56,8 +60,8 @@ VALUES
 (2, 'Noah', 0),
 (3, 'Logan', 22),
 (3, 'Lucca', 10),
-(4, 'Noah', 2),
-(4, 'Ben', 55.66);
+(4, 'Noah', 0),
+(4, 'Ben', 0);
 
 INSERT INTO transactions_group
 (group_id, charge_amount, charge_name, date, requester_username, group_name, members_who_paid)
@@ -70,13 +74,13 @@ VALUES
 INSERT INTO transactions_individual
 (charge_amount, charge_desc, date, sender_username, recipient_username)
 VALUES
-(52.54, 'Groceries payback', '04/10/24', 'Noah', 'Ben'),
-(8.99, 'Museum', '04/17/24', 'Owen', 'Ben'),
-(65.46, 'Velveeta super pack', '03/23/24', 'Jace', 'Logan'),
-(70.73, 'Chinese food', '02/22/24', 'Logan', 'Lucca'),
-(3.33, 'Paper', '01/22/24', 'Logan', 'Lucca'),
-(33.44, 'New hat', '04/14/24', 'Ben', 'Jace'),
-(77.99, 'Gambling money', '01/01/24', 'Logan', 'Owen'),
-(12345.67, 'My life savings', '03/04/24', 'Jace', 'Lucca'),
-(69, ';)', '04/01/24', 'Owen', 'Jace'),
-(81, '54 Costco Hot Dogs', '02/21/24', 'Noah', 'Ben');
+(52.54, 'Groceries payback', '2024-04-10', 'Noah', 'Ben'),
+(8.99, 'Museum', '2024-04-17', 'Owen', 'Ben'),
+(65.46, 'Velveeta super pack', '2024-03-24', 'Jace', 'Logan'),
+(70.73, 'Chinese food', '2024-02-22', 'Logan', 'Lucca'),
+(3.33, 'Paper', '2024-01-22', 'Logan', 'Lucca'),
+(33.44, 'New hat', '2024-04-14', 'Ben', 'Jace'),
+(77.99, 'Gambling money', '2024-01-01', 'Logan', 'Owen'),
+(12345.67, 'My life savings', '2024-03-04', 'Jace', 'Lucca'),
+(69, ';)', '2024-04-01', 'Owen', 'Jace'),
+(81, '54 Costco Hot Dogs', '2024-02-21', 'Noah', 'Ben');

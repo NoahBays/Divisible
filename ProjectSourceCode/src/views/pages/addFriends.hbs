@@ -1,27 +1,7 @@
-{{!-- {{> header}}
 
-{{message}} {{!-- Friend request sent!, then displays the info of the friend who has been clicked (profile pic, , username, and name (if allowed in their settings)) --}}
-
-
-<div class="container">
-    <img src="{{friend.image}}" alt="{{friend.name}}" class="img-thumbnail">
-    <h3>{{friend.username}}</h3>
-    <p>{{friend.name}}</p>
-</div>
-
-{{> footer}} --}}
-{{!-- Example API
-app.get('/addFriends', (req, res) => {
-    const friend = {
-        username: 'friend1',
-        name: 'Friend One',
-        image: '/path/to/image.jpg',
-    };
-    res.render('addFriends', { friend });
-});
---}}
 
 {{> header}}
+{{> nav}}
 
 <h2>Add Friends</h2>
 
@@ -42,9 +22,6 @@ app.get('/addFriends', (req, res) => {
   </select>
   <button type="submit">Add Friend</button>
 </form>
-
-<!-- displaying feedback 
-<div id = "messageArea"></div>-->
 
 {{> footer}}
 
@@ -67,7 +44,6 @@ app.get('/addFriends', (req, res) => {
         alert(`${selectedFriend} added as a friend.`);
       } else {
         alert(data.message);
-        //alert(`Failed to add ${selectedFriend} as a friend.`); // error that keeps on appearing
       }
     })
     .catch(error => console.error('Error:', error));

@@ -1,36 +1,84 @@
-{{! Navbar is currently just copied over from lab 8-need to discuss some design decisions to flesh out }}
-
 <style>
-  .logo img{ width: auto; height: 2.5vh; margin-top: 0.5vh; margin-right: 1vw; }
+  .logo img{ width: auto; height: 2.5vh; }
+
+  .navBox {
+      width: 100%;
+      padding: 15px;
+      backdrop-filter: blur(35px);
+      background: rgba(12, 12, 12, 0.4);
+    }
+
+    .contentBox {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .leftBox {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      column-gap: 1vw;
+    }
+
 </style>
 
 <header>
-  <nav class="navbar navbar-expand-sm border-bottom">
+  <div class="navBox">
     <div class="container">
-      <div class="logo">
-        <a href="/home">
-          <img src="images/DivisibleLogo.png" alt="Divisible Logo" />
-        </a>
-      </div>
-      <button
-        class="navbar-toggler ms-auto"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbar-collapse"
-        aria-controls="navbar"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbar-collapse">
-        <div class="nav-item me-1">
-          <a class="nav-link" href="/logout">
-            Logout
-          </a>
-          {{>linkButton buttonText="Logout" link="/logout"}}
+      <div class="contentBox" >
+        <div class="leftBox">
+          <div class="logo">
+            <a href="/home">
+                <img src="images/DivisibleLogo.png" alt="Divisible Logo" />
+              </a>
+            </div>
+
+            <ul
+              class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
+            >
+              <li>{{>link linkText="Pay Individuals" link="/individualPayment"}}</li>
+              <li>{{>link linkText="Pay Groups" link="/groupPayment"}}</li>
+            </ul>
         </div>
+        
+        <div style="flex-end">
+          <div style="display: flex; flex-direction: row; column-gap: 1vw;">
+            <div>
+                {{#if request}}
+                    <button class="btn btn-danger" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #FFFF94; box-sizing: border-box; display: inline-block; padding: 1rem 1rem; width: auto; height: auto; border: 1px solid rgba(0, 0, 0, 0); border-radius: 13px; font-size: 1em; line-height: 0.75em; text-decoration: none; color: #0C0C0C; text-decoration: none; text-align: center;">
+                        Requests ({{request_number}})
+                    </button>
+                    <ul class="dropdown-menu" style="background-color: #FFFF94">
+                        {{#each request}}
+                            <label for="request"></label>
+                            <li style="background-color: #FFFF94"><a class="dropdown-item btn viewRequest" name="request" style="background-color: #FFFF94">{{this.asker_username}}</a></li>
+                        {{/each}}
+                    </ul>
+                {{else}}
+                    <button class="btn btn-secondary btn-outline" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #00FF94; box-sizing: border-box; display: inline-block; padding: 1rem 1rem; width: auto; height: auto; border: 1px solid rgba(0, 0, 0, 0); border-radius: 13px; font-size: 1em; line-height: 0.75em; text-decoration: none; color: #0C0C0C; text-decoration: none; text-align: center;">
+                        Requests
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item">No requests.</a></li>
+                    </ul>
+                {{/if}}
+            </div>
+                {{>linkButton buttonText="Logout" link="/logout"}}
+              </div>
+          </div>
       </div>
     </div>
-  </nav>
+  </div>
 </header>
+
+<script >
+  $(document).ready(function(){
+    document.querySelectorAll('.viewRequest').forEach(function(button) {
+        button.addEventListener('click', function() {
+            window.location.href = '/request' + this.innerHTML;    
+        });
+    });
+});
+</script>
