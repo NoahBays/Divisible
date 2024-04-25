@@ -3,8 +3,13 @@
     .form-group {
         margin-bottom: 1rem;
     }
-
-    .form-group input[type="text"],
+    .form-input { /* Base styles */ background-color: rgba(12, 12, 12, 0.5);
+        color: #C8C8C8; display: block; width: 100%; height: 7vh; padding: 1rem 1rem;
+        border: 1px solid rgba(0, 0, 0, 0); border-radius: 13px; font-size: 1em;
+        box-sizing: border-box; margin-right: 1.5vw; /* Include padding in width */ /*
+        Focus styles */ &:focus { outline: none; /* Remove default outline */
+        border-color: #00FF94; /* Change border color on focus */ } 
+    }
     .form-group button {
         display: block;
         width: 100%;
@@ -51,27 +56,60 @@
         margin-bottom: 5vh;
     }
 
+    .sectionHeader {
+        margin-bottom: 2vh;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        column-gap: 1vw;
+    }
+
+    .containerArea {
+        display: flex;
+        flex-direction: column;
+        row-gap: 2vh;
+    }
+
 </style>
 {{> nav}}
 
-<div class="d-flex justify-content-center vh-100">
-    <form id="createGroupForm">
-        <div>
-            <input class = "box" type="text" id="groupName" placeholder="Group Name..." required>
-            <button class = "btn btn-block btn-lg btn-primary"  id="confirmNameButton">Confirm Name</button>
-        </div>
-        <div>
-            <input class = "box" type="text" id="search" placeholder="Add friends to group..." disabled>
-            <button id="addUserButton" class = "btn btn-block btn-lg btn-primary" disabled>Add User</button>
-        </div>
-        <div>
-            <ul id="groupMembers"></ul>
-        </div>
-        <form action="/groups" method="POST" class="form-group">
-            <!-- Your form fields here -->
-            <button id="submitButton" class="btn btn-lg btn-primary btn-block" type="submit">Create Group</button>
+<div class="container">
+    <!--Header Text-->
+    <div class="sectionHeader" style="margin-top: 5vh;">
+        <h3>Create a new Group</h3>
+    </div>
+    <!-- Header Text-->
+
+        <form id="createGroupForm">
+            <div class="containerArea">
+                <div class="containerArea">
+                    <input class="form-input" type="text" id="groupName" placeholder="Group Name..." required>
+                    {{> wideButton id="confirmNameButton" buttonText="Confirm Name"}}
+                </div>
+                <!--Header Text-->
+                <div class="sectionHeader" style="margin-top: 5vh;">
+                    <h3>Add friends</h3>
+                </div>
+                <!-- Header Text-->
+                <div class="containerArea">
+                    <input class="form-input" type="text" id="search" placeholder="Add friends to group..." disabled>
+                    <button
+                        class="btn btn-lg btn-primary btn-block"
+                        id="addUserButton"
+                        style="background-color: #00FF94; color: #0C0C0C; border-color: #00FF94;"
+                        disabled
+                    >Add User</button>
+                </div>
+                <div>
+                    <ul id="groupMembers"></ul>
+                </div>
+                <form action="/groups" method="POST" class="form-group">
+                    <!-- Your form fields here -->
+                    {{> wideButton id="submitButton" type="submit" buttonText="Create Group"}}
+                </form>
+            </div>
         </form>
-    </form>
+    </div>
 </div>
 
 {{> footer}}

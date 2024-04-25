@@ -1,13 +1,53 @@
+<style>
+    .box {
+        padding-top: 2vh;
+        padding-bottom: 2vh;
+        padding-right: 3vw;
+        padding-left: 3vw;
+        backdrop-filter: blur(35px);
+        background: rgba(12, 12, 12, 0.4);
+        box-shadow: 0px 0px 15px rgba(6, 6, 6, 0.35);
+        border-radius: 20px;
+        margin-top: 5vh;
+        margin-bottom: 5vh;
+    }
+
+    .sectionHeader {
+        margin-bottom: 2vh;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        column-gap: 1vw;
+    }
+
+    .form-input { /* Base styles */ background-color: rgba(12, 12, 12, 0.5);
+        color: #C8C8C8; display: block; width: 100%; height: 7vh; padding: 1rem 1rem;
+        border: 1px solid rgba(0, 0, 0, 0); border-radius: 13px; font-size: 1em;
+        box-sizing: border-box; margin-right: 1.5vw; /* Include padding in width */ /*
+        Focus styles */ &:focus { outline: none; /* Remove default outline */
+        border-color: #00FF94; /* Change border color on focus */ } 
+    }
+
+    .containerArea {
+        display: flex;
+        flex-direction: column;
+        row-gap: 2vh;
+    }
+</style>
+
+
 {{>nav}}
+
 <div class="container">
-    <div class="row align-items-center">
-        <h3>Your current balance is: ${{user.wallet}}</h3>
+    <!--Balance Text-->
+    <div class="sectionHeader" style="margin-top: 5vh;">
+        <h3>Current Balance: <span style="color: #00FF94">${{user.wallet}}</span></h3>
     </div>
-    <div class="row align-items-center">
-        <form action="/addMoney" method="POST">
-            <label for="money">Insert amount here:</label>
-            <input id="money" name="money" class="form-control mb-3" required/>
-            <button type="submit" class="btn btn-success">Add Money</button>
-        </form>
-    </div>
+    <!-- End Balance Text-->
+    <form action="/addMoney" method="POST">
+        <div class="containerArea">
+            <input class="form-input" type="username" name="money" placeholder="Deposit Amount" required/>
+            {{> wideButton type="submit" buttonText="Add Money" disabled="false"}}
+        </div>
+    </form>
 </div>
