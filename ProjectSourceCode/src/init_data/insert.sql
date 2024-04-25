@@ -58,8 +58,8 @@ VALUES
 (2, 'Lucca', 80.20),
 (2, 'Jace', 1),
 (2, 'Noah', 0),
-(3, 'Logan', 22),
-(3, 'Lucca', 10),
+(3, 'Logan', 0),
+(3, 'Lucca', 0),
 (4, 'Noah', 0),
 (4, 'Ben', 0);
 

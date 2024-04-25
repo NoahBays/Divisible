@@ -239,16 +239,20 @@ app.get("/addMoney", (req, res) => {
 
 app.post("/addMoney", (req, res) => {
   db.one("SELECT wallet FROM users WHERE username = $1", [
-    req.session.user.username,
+    req.session.user.username
   ])
     .then((data) => {
-      console.log(
-        "parseFloat(parseFloat(req.body.money)).toFixed(2) + data.wallet = ",
-        parseFloat(parseFloat(req.body.money).toFixed(2)) + data.wallet
-      );
+      const addMoney = parseFloat(req.body.money).toFixed(2);
+      if(isNaN(addMoney))
+      {
+        console.log("Non-number inserted");
+        res.redirect("/addMoney");
+        return;
+      }
+      const currentMoney = data.wallet;
+      const sum = +addMoney + +currentMoney;
       db.none("UPDATE users SET wallet = $1 WHERE username = $2", [
-        parseFloat(parseFloat(req.body.money).toFixed(2)) + data.wallet,
-        req.session.user.username,
+        sum, req.session.user.username
       ])
         .then((data2) => {
           req.session.message = "Money added successfully.";
@@ -265,7 +269,6 @@ app.post("/addMoney", (req, res) => {
       res.redirect("/login");
     });
 });
-
 // viewUser
 
 app.get("/viewUser:username", async (req, res) => {
@@ -343,14 +346,11 @@ app.get("/request:username", async (req, res) => {
   const loggedInUsername = req.session.user.username;
   const asker_username = req.params.username;
 
-  console.log("asker_username", asker_username);
-
   // Fetch the user data of the visiting user
   const requests = await db.any(
     "SELECT * FROM requests WHERE asker_username = $1 AND recipient_username = $2",
     [asker_username, loggedInUsername]
   );
-  console.log("requests = ", requests);
   res.render("pages/request", {
     username: loggedInUsername,
     friend: asker_username,
@@ -527,7 +527,7 @@ app.post("/addFriends", async (req, res) => {
     if (currentUser == friend) {
       return res.json({ status: 400, message: 'Failed to add as a friend.' });
     }
-=======
+
     // Insert the friendship into the friendships table
     // await db.none(
     //   "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)",
@@ -538,6 +538,11 @@ app.post("/addFriends", async (req, res) => {
     const query =
       "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)";
     await db.none(query, [currentUser, friend, 0]);
+    const query2 =
+      "INSERT INTO friendships (friend_username, user_username, outstanding_balance) VALUES ($1, $2, $3)";
+
+    await db.none(query, [currentUser, friend, 0]);
+    await db.none(query2, [friend, currentUser, 0]);
 
     res.json({ status: 200, message: `${friend} added as a friend.` });
   } catch (error) {
@@ -551,8 +556,8 @@ app.get("/individualPayment", (req, res) => {
   res.render("pages/individualPayment", {});
 });
 
-app.get("/groupPayment", (req, res) => {
-  res.render("pages/groupPayment", {});
+app.get("/gruPayment", (req, res) => {
+  res.render("pages/gruPayment", {});
 });
 
 // * REGISTER ENDPOINTS * //
@@ -695,7 +700,7 @@ app.post("/payment-individual", async (req, res) => {
           const friend_result1 = await updateFriendshipBalance(
             senderUsername,
             recipientUsername,
-            amount,
+            -amount,
             t
           );
           if (!friend_result1) {
@@ -704,7 +709,7 @@ app.post("/payment-individual", async (req, res) => {
           const friend_result2 = await updateFriendshipBalance(
             recipientUsername,
             senderUsername,
-            -amount,
+            amount,
             t
           );
           if (!friend_result2) {
@@ -723,26 +728,6 @@ app.post("/payment-individual", async (req, res) => {
           recipientUsername,
         ]);
       } else {
-        // adding a request form
-        // update friendship balance
-        const friend_result1 = await updateFriendshipBalance(
-          senderUsername,
-          recipientUsername,
-          -amount,
-          t
-        );
-        if (!friend_result1) {
-          throw new Error("Failed to update outstanding balance sender");
-        }
-        const friend_result2 = await updateFriendshipBalance(
-          recipientUsername,
-          senderUsername,
-          amount,
-          t
-        );
-        if (!friend_result2) {
-          throw new Error("Failed to update outstanding balance reciever");
-        }
         // add request to request table
         const transactionQuery = `
           INSERT INTO requests (charge_amount, charge_desc, date, asker_username, recipient_username)
@@ -929,16 +914,13 @@ async function processGroupPayback(group_name, group_member, charge_name, id, t)
           Limit 1
         `, [group_name, group_member, charge_name]);
         
-        if (!outstanding_group) {
+        if (!outstanding_group[0]) {
           console.log('User has paid all their groups');
           return;
         }
         else{
-          console.log(outstanding_group);
-          console.log(outstanding_group[0].charge_amount);
-          console.log(group_member);
 
-  if (!outstanding_group) {
+  if (!outstanding_group[0]) {
     // If no records are found, it means all dues are paid by the user
     console.log("User has paid all their groups");
     return;
@@ -981,9 +963,11 @@ async function updateFriendshipBalance(
       amount = -existingBalance;
     }
 
+    const money = parseFloat(amount).toFixed(2);
+
     await t.none(
       "UPDATE friendships SET outstanding_balance = outstanding_balance + $1 WHERE user_username = $2 AND friend_username = $3",
-      [amount, user_username, friend_username]
+      [+money, user_username, friend_username]
     );
 
     return { success: true };
@@ -994,7 +978,8 @@ async function updateFriendshipBalance(
 }
 async function updateUserWallet(username, amount, transaction) {
   const query = 'UPDATE users SET wallet = wallet + $1 WHERE username = $2 RETURNING *';
-  const res = await transaction.one(query, [amount, username]);
+  const money = parseFloat(amount).toFixed(2);
+  const res = await transaction.one(query, [+money, username]);
   return res;
 }
 
@@ -1005,7 +990,8 @@ async function updateGroupMemberBalance(requesterUsername, amount, id, t) {
           SET outstanding_balance = outstanding_balance + $1
           WHERE group_id = $2 AND username != $3
       `;
-    await t.none(updateQuery, [amount, id, requesterUsername]);
+      const money = parseFloat(amount).toFixed(2);
+    await t.none(updateQuery, [+money, id, requesterUsername]);
     return { success: true };
   } catch (error) {
     console.error("Error updating group member balance:", error);
