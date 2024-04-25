@@ -539,9 +539,7 @@ app.post("/addFriends", async (req, res) => {
       "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)";
     await db.none(query, [currentUser, friend, 0]);
     const query2 =
-      "INSERT INTO friendships (friend_username, user_username, outstanding_balance) VALUES ($1, $2, $3)";
-
-    await db.none(query, [currentUser, friend, 0]);
+      "INSERT INTO friendships (user_username, friend_username, outstanding_balance) VALUES ($1, $2, $3)";
     await db.none(query2, [friend, currentUser, 0]);
 
     res.json({ status: 200, message: `${friend} added as a friend.` });
